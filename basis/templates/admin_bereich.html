@@ -2,13 +2,13 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - Grade Tracker</title>
+    <title>Admin-Bereich - Grade Tracker</title>
     <style>
     body {
         background-color: #0b0b0f;
         color: #ffffff;
         font-family: Arial, sans-serif; 
-        font-size: 16px;                
+        font-size: 16px;                 
         margin: 0;
         padding: 40px;
     }
@@ -49,20 +49,20 @@
 <body>
 
     <div class="container">
-        <!-- Das Menü oben zum Testen -->
+        <!-- Das Menü oben -->
         <div class="nav-leiste">
-            <a href="{% url 'dashboard' %}" class="aktiv">Dashboard</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'students' %}">Students</a>
             <a href="{% url 'courses' %}">Courses</a>
             <a href="{% url 'grades' %}">Grades</a>
             <a href="{% url 'reports' %}">Reports</a>
-            <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
+            <a href="{% url 'admin_bereich' %}" class="aktiv" style="color: #eb0879;">Admin</a>
         </div>
 
-        <!-- Der Inhalt für das Dashboard -->
+        <!-- Der Inhalt für den Admin-Bereich -->
         <div class="box">
-            <h1>Dashboard</h1>
-            <p style="color: #8b8b9e;">Hier entsteht Übersicht.</p>
+            <h1>Admin-Bereich</h1>
+            <p style="color: #8b8b9e;">Hier verwaltest du deine Daten.</p>
         </div>
     </div>
 
