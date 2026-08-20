@@ -1,65 +1,114 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <title>Reports - Grade Tracker</title>
     <style>
-    body {
-        background-color: #0b0b0f;
-        color: #ffffff;
-        font-family: Arial, sans-serif; 
-        font-size: 16px;                 
-        margin: 0;
-        padding: 40px;
-    }
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    .nav-leiste {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 40px;
-        border-bottom: 1px solid #2a2a35;
-        padding-bottom: 15px;
-    }
-    .nav-leiste a {
-        color: #8b8b9e;
-        text-decoration: none;
-        font-weight: bold;
-    }
-    .nav-leiste a.aktiv {
-        color: #ffffff;
-    }
-    .box {
-        background-color: #16161e;
-        border: 1px solid #2a2a35;
-        border-radius: 12px;
-        padding: 30px;
-    }
-    h1 {
-        font-size: 24px; 
-        margin-top: 0;
-    }
-    p {
-        font-size: 16px;
-    }
-</style>
+        body {
+            background-color: #0b0b0f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-leiste {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #2a2a35;
+            padding-bottom: 15px;
+        }
+
+        .nav-leiste a {
+            color: #8b8b9e;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-leiste a.aktiv {
+            color: #ffffff;
+        }
+
+        .box {
+            background-color: #16161e;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 0;
+        }
+
+        p {
+            font-size: 16px;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
         <div class="nav-leiste">
-    <a href="{% url 'dashboard' %}">Dashboard</a>
-    <a href="{% url 'students' %}">Students</a>
-    <a href="{% url 'courses' %}">Courses</a>
-    <a href="{% url 'grades' %}">Grades</a>
-    <a href="{% url 'reports' %}" class="aktiv">Reports</a>
-    <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
-</div>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'students' %}">Students</a>
+            <a href="{% url 'courses' %}">Courses</a>
+            <a href="{% url 'grades' %}">Grades</a>
+            <a href="{% url 'reports' %}" class="aktiv">Reports</a>
+            <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
+        </div>
+
         <div class="box">
             <h1>Reports</h1>
-            <p style="color: #8b8b9e;">Berichte, Statistiken und Exporte.</p>
+            <p style="color: #8b8b9e; margin-bottom: 25px;">Berichte, Statistiken und Notendurchschnitte.</p>
+
+            <h3 style="margin-top: 20px; color: #fff; font-size: 18px;">Notendurchschnitt pro Student</h3>
+            <ul style="list-style-type: none; padding: 0;">
+                {% for student in student_averages %}
+                <li
+                    style="padding: 10px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between;">
+                    <span>{{ student.name }}</span>
+                    <strong style="color: #8b8b9e;">
+                        {% if student.avg_score %}
+                        {{ student.avg_score|floatformat:2 }} Pkt.
+                        {% else %}
+                        Keine Noten
+                        {% endif %}
+                    </strong>
+                </li>
+                {% empty %}
+                <li style="color: #8b8b9e;">Keine Studenten vorhanden.</li>
+                {% endfor %}
+            </ul>
+
+            <h3 style="margin-top: 30px; color: #fff; font-size: 18px;">Durchschnitt pro Kurs</h3>
+            <ul style="list-style-type: none; padding: 0;">
+                {% for course in course_averages %}
+                <li
+                    style="padding: 10px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between;">
+                    <span>{{ course.name }}</span>
+                    <strong style="color: #8b8b9e;">
+                        {% if course.avg_score %}
+                        {{ course.avg_score|floatformat:2 }} Pkt.
+                        {% else %}
+                        Keine Noten
+                        {% endif %}
+                    </strong>
+                </li>
+                {% empty %}
+                <li style="color: #8b8b9e;">Keine Kurse vorhanden.</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </body>
+
 </html>

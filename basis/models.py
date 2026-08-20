@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Student
 class Student(models.Model):
     name = models.CharField(max_length=100)
@@ -7,6 +8,7 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
 
 # Kurs
 class Course(models.Model):
@@ -16,6 +18,7 @@ class Course(models.Model):
     def __str__(self):
         return self.name + " (Max: " + str(self.max_score) + ")"
 
+
 # Noten
 class Grade(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -23,4 +26,11 @@ class Grade(models.Model):
     score = models.IntegerField()
 
     def __str__(self):
-        return self.student.name + " - " + self.course.name + ": " + str(self.score) + " Punkte"
+        return (
+            self.student.name
+            + " - "
+            + self.course.name
+            + ": "
+            + str(self.score)
+            + " Punkte"
+        )
