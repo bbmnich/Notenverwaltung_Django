@@ -58,15 +58,20 @@
     <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
 </div>
 
-        <!-- Inhalt -->
+    
         <div class="box">
-            <div class="header-row">
-                <h1>Students</h1>
-            </div>
-            <p style="color: #8b8b9e;">Liste aller Studenten
-
-            </p>
-        </div>
-    </div>
+    <h1>Students</h1>
+    
+    <!-- Daten aus der Datenbank -->
+    <ul style="list-style-type: none; padding: 0;">
+        {% for student in students %}
+            <li style="padding: 8px 0; border-bottom: 1px solid #2a2a35;">
+                {{ student.name }} <span style="color: #8b8b9e; font-size: 14px;">({{ student.email }})</span>
+            </li>
+        {% empty %}
+            <li style="color: #8b8b9e;">Noch keine Studenten vorhanden. Trage welche im Admin-Bereich ein!</li>
+        {% endfor %}
+    </ul>
+</div>
 </body>
 </html>

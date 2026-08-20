@@ -3,10 +3,10 @@ from django.db import models
 # Student
 class Student(models.Model):
     name = models.CharField(max_length=100)
+    email = models.EmailField(default="")
 
     def __str__(self):
         return self.name
-    email = models.EmailField(default="")
 
 # Kurs
 class Course(models.Model):
