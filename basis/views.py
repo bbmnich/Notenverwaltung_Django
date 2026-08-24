@@ -4,11 +4,24 @@ from .models import Student, Course, Grade
 
 
 def dashboard_view(request):
-    return render(request, "dashboard.html")
+    # Gesamtzahl der jeweiligen Einträge aus der Datenbank ermitteln
+    student_count = Student.objects.count()  # Zählt alle Datensätze in der Student-Tabelle
+    course_count = Course.objects.count()  # Zählt alle Datensätze in der Course-Tabelle
+    grade_count = Grade.objects.count()  # Zählt alle Datensätze in der Grade-Tabelle
+
+    # Dictionary bündelt die Daten, um sie an das HTML-Template zu übergeben
+    context = {
+        "student_count": student_count,
+        "course_count": course_count,
+        "grade_count": grade_count,
+    }
+
+    # dashboard mit den aktuellen Daten
+    return render(request, "dashboard.html", context)
 
 
 def students_view(request):
-    students = Student.objects.all()  # Holt alle Studenten aus der Datenbank
+    students = Student.objects.all()  # alle Studenten aus der Datenbank
     return render(request, "students.html", {"students": students})
 
 
