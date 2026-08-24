@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student bearbeiten</title>
+    <style>
+        body {
+            background-color: #0b0b0f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .box {
+            background-color: #16161e;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            background-color: #0b0b0f;
+            border: 1px solid #2a2a35;
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #eb0879;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>Student bearbeiten: {{ student.first_name }} {{ student.last_name }}</h1>
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Änderungen speichern</button>
+            </form>
+
+            <br>
+            <a href="{% url 'students' %}" style="color: #8b8b9e; text-decoration: none;">← Zurück zur Übersicht</a>
+        </div>
+    </div>
+</body>
+
+</html>

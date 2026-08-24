@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Avg
 from .forms import StudentForm
 from .models import Student, Course, Grade
@@ -10,7 +10,7 @@ def dashboard_view(request):
     course_count = Course.objects.count()  # Zählt alle Datensätze in der Course-Tabelle
     grade_count = Grade.objects.count()  # Zählt alle Datensätze in der Grade-Tabelle
 
-    # Dictionary bündelt die Daten, um sie an das HTML-Template zu übergeben
+    # Daten zusammenbündeln, um sie an das HTML-Template zu übergeben
     context = {
         "student_count": student_count,
         "course_count": course_count,
@@ -27,14 +27,32 @@ def student_create_view(request):
         form = StudentForm(request.POST)
         if form.is_valid():
             form.save()  # Speichert den Studenten in der Datenbank
-            return redirect(
-                "students"
-            )  # Leitet  zur Studenten-Liste weiter
+            return redirect("students")  # Leitet  zur Studenten-Liste weiter
     else:
         # Nutzer ruft die Seite auf (GET-Request): Ein leeres Formular anzeigen
         form = StudentForm()
 
     return render(request, "student_create.html", {"form": form})
+
+
+def student_edit(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == "POST":
+        form = StudentForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect("students")
+    else:
+        form = StudentForm(instance=student)
+    return render(request, "basis/student_edit.html", {"form": form, "student": student})
+
+
+def student_delete(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == "POST":
+        student.delete()
+        return redirect("students")
+    return render(request, "basis/student_delete.html", {"student": student})
 
 
 def students_view(request):

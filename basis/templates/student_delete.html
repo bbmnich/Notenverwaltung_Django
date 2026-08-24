@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student löschen</title>
+    <style>
+        body {
+            background-color: #0b0b0f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .box {
+            background-color: #16161e;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+        }
+
+        .btn-delete {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>Student löschen</h1>
+            <p>Bist du sicher, dass du <strong>{{ student.first_name }} {{ student.last_name }}</strong> unwiderruflich
+                löschen möchtest?</p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">Ja, löschen</button>
+                <a href="{% url 'students' %}"
+                    style="color: #8b8b9e; text-decoration: none; margin-left: 15px;">Abbrechen</a>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

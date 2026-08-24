@@ -80,7 +80,16 @@
             <!-- Daten aus der Datenbank -->
             <ul style="list-style-type: none; padding: 0;">
                 {% for student in students %}
-                <li style="padding: 8px 0; border-bottom: 1px solid #2a2a35;">{{ student.first_name }} {{ student.last_name }} <span style="color: #8b8b9e; font-size: 14px;">({{ student.email }})</span>
+                <li
+                    style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ student.first_name }} {{ student.last_name }} <span
+                            style="color: #8b8b9e; font-size: 14px;">({{ student.email }})</span></span>
+                    <div>
+                        <a href="{% url 'student_edit' student.pk %}"
+                            style="color: #f0ad4e; text-decoration: none; margin-right: 15px; font-size: 14px;">Bearbeiten</a>
+                        <a href="{% url 'student_delete' student.pk %}"
+                            style="color: #d9534f; text-decoration: none; font-size: 14px;">Löschen</a>
+                    </div>
                 </li>
                 {% empty %}
                 <li style="color: #8b8b9e;">Noch keine Studenten vorhanden.</li>
