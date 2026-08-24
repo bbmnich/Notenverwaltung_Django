@@ -11,4 +11,5 @@ urlpatterns = [
     path("reports/", views.reports_view, name="reports"),
     path("admin-bereich/", views.admin_bereich_view, name="admin_bereich"),
     path('reports/', views.reports_view, name='reports'),
+    path('students/new/', views.student_create_view, name='student_create'),
 ]

@@ -69,16 +69,21 @@
 
 
         <div class="box">
-            <h1>Students</h1>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 style="margin: 0;">Students</h1>
+                <a href="{% url 'student_create' %}"
+                    style="background-color: #eb0879; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-size: 14px;">+
+                    Neuen Studenten anlegen</a>
+            </div>
 
             <!-- Daten aus der Datenbank -->
             <ul style="list-style-type: none; padding: 0;">
                 {% for student in students %}
-                <li style="padding: 8px 0; border-bottom: 1px solid #2a2a35;">
-                    {{ student.name }} <span style="color: #8b8b9e; font-size: 14px;">({{ student.email }})</span>
+                <li style="padding: 8px 0; border-bottom: 1px solid #2a2a35;">{{ student.first_name }} {{ student.last_name }} <span style="color: #8b8b9e; font-size: 14px;">({{ student.email }})</span>
                 </li>
                 {% empty %}
-                <li style="color: #8b8b9e;">Noch keine Studenten vorhanden. Trage welche im Admin-Bereich ein!</li>
+                <li style="color: #8b8b9e;">Noch keine Studenten vorhanden.</li>
                 {% endfor %}
             </ul>
         </div>

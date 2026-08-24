@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Avg
+from .forms import StudentForm
 from .models import Student, Course, Grade
 
 
@@ -18,6 +19,22 @@ def dashboard_view(request):
 
     # dashboard mit den aktuellen Daten
     return render(request, "dashboard.html", context)
+
+
+def student_create_view(request):
+    # Nutzer sendet das Formular
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()  # Speichert den Studenten in der Datenbank
+            return redirect(
+                "students"
+            )  # Leitet  zur Studenten-Liste weiter
+    else:
+        # Nutzer ruft die Seite auf (GET-Request): Ein leeres Formular anzeigen
+        form = StudentForm()
+
+    return render(request, "student_create.html", {"form": form})
 
 
 def students_view(request):
