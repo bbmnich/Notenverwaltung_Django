@@ -44,7 +44,7 @@ def student_edit(request, pk):
             return redirect("students")
     else:
         form = StudentForm(instance=student)
-    return render(request, "basis/student_edit.html", {"form": form, "student": student})
+    return render(request, "student_edit.html", {"form": form, "student": student})
 
 
 def student_delete(request, pk):
@@ -52,7 +52,7 @@ def student_delete(request, pk):
     if request.method == "POST":
         student.delete()
         return redirect("students")
-    return render(request, "basis/student_delete.html", {"student": student})
+    return render(request, "student_delete.html", {"student": student})
 
 
 def students_view(request):
@@ -66,7 +66,7 @@ def courses_view(request):
 
 
 def grades_view(request):
-    grades = Grade.objects.all().order_by("student__name")  # Noten abrufen
+    grades = Grade.objects.all().order_by("student__last_name")  # Nach Nachname sortieren
     return render(request, "grades.html", {"grades": grades})
 
 
