@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Courses - Grade Tracker</title>
     <style>
+        /* GRUNDLEGENDES SEITEN-DESIGN*/
         body {
             background-color: #0b0b0f;
             color: #ffffff;
@@ -18,7 +19,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-
+        /* NAVIGATIONSSLEISTE OBEN */
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -36,7 +37,7 @@
         .nav-leiste a.aktiv {
             color: #ffffff;
         }
-
+        /* HAUPTINHALT */
         .box {
             background-color: #16161e;
             border: 1px solid #2a2a35;
@@ -52,6 +53,36 @@
         p {
             font-size: 16px;
         }
+
+        /* BUTTONS UND AKTIONEN */
+        .btn-create {
+            display: inline-block;
+            background-color: #eb0879;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .btn-create:hover {
+            opacity: 0.9;
+        }
+
+        .course-actions a {
+            margin-left: 15px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            color: #3b82f6;
+        }
+
+        .btn-delete {
+            color: #eb0879;
+        }
     </style>
 </head>
 
@@ -65,16 +96,31 @@
             <a href="{% url 'reports' %}">Reports</a>
             <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
         </div>
+        <!-- Hauptbereich für Kurse --> 
         <div class="box">
             <h1>Kurse</h1>
 
+            <!-- Button, um einen neuen Kurs anzulegen -->
+            <a href="{% url 'course_create' %}" class="btn-create">+ Neuen Kurs erstellen</a>
+
             <ul style="list-style-type: none; padding: 0;">
                 {% for course in courses %}
-                <li style="padding: 10px 0; border-bottom: 1px solid #2a2a35;">
-                    <strong>{{ course.name }}</strong>
-                    <span style="color: #8b8b9e; font-size: 14px;">(Max. Punkte: {{ course.max_score }})</span>
+                <li
+                    style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>{{ course.name }}</strong>
+                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{ course.max_score }})</span>
+                    </div>
+                    <div class="course-actions">
+                        <!-- Bearbeiten-Button -->
+                        <a href="{% url 'course_edit' course.pk %}" class="btn-edit">Bearbeiten</a>
+                        <!-- Löschen-Button -->
+                        <a href="{% url 'course_delete' course.pk %}" class="btn-delete">Löschen</a>
+                    </div>
                 </li>
                 {% empty %}
+
+                <!-- Fall, falls noch keine Kurse existieren -->
                 <li style="color: #8b8b9e;">Noch keine Kurse angelegt.</li>
                 {% endfor %}
             </ul>

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Avg
 from .forms import StudentForm
+from .forms import CourseForm
 from .models import Student, Course, Grade
 
 
@@ -60,18 +61,45 @@ def students_view(request):
     return render(request, "students.html", {"students": students})
 
 
-def courses_view(request):
+def course_list(request):
     courses = Course.objects.all()  # Alle Kurse aus der Datenbank
     return render(request, "courses.html", {"courses": courses})
+
+
+def course_create(request):
+    if request.method == "POST":
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("courses")
+    else:
+        form = CourseForm()
+    return render(request, "course_form.html", {"form": form})
+
+
+def course_edit(request, pk):
+    course = get_object_or_404(Course, pk=pk)
+    if request.method == "POST":
+        form = CourseForm(request.POST, instance=course)
+        if form.is_valid():
+            form.save()
+            return redirect("courses")
+    else:
+        form = CourseForm(instance=course)
+    return render(request, "course_form.html", {"form": form, "course": course})
+
+
+def course_delete(request, pk):
+    course = get_object_or_404(Course, pk=pk)
+    if request.method == "POST":
+        course.delete()
+        return redirect("courses")
+    return render(request, "course_confirm_delete.html", {"course": course})
 
 
 def grades_view(request):
     grades = Grade.objects.all().order_by("student__last_name")  # Nach Nachname sortieren
     return render(request, "grades.html", {"grades": grades})
-
-
-def reports_view(request):
-    return render(request, "reports.html")
 
 
 def admin_bereich_view(request):

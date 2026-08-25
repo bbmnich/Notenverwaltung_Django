@@ -6,7 +6,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),  # Standard-Django-Admin
     path("", views.dashboard_view, name="dashboard"),
     path("students/", views.students_view, name="students"),
-    path("courses/", views.courses_view, name="courses"),
+    path("courses/", views.course_list, name="courses"),
+    path('courses/new/', views.course_create, name='course_create'),
+    path('courses/<int:pk>/edit/', views.course_edit, name='course_edit'),
+    path('courses/<int:pk>/delete/', views.course_delete, name='course_delete'),
     path("grades/", views.grades_view, name="grades"),
     path("reports/", views.reports_view, name="reports"),
     path("admin-bereich/", views.admin_bereich_view, name="admin_bereich"),
