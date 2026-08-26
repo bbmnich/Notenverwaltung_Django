@@ -15,8 +15,12 @@ urlpatterns = [
     path("courses/new/", views.course_create, name="course_create"),
     path("courses/<int:pk>/edit/", views.course_edit, name="course_edit"),
     path("courses/<int:pk>/delete/", views.course_delete, name="course_delete"),
-    # Weitere Bereiche
+    # Grades URLs
     path("grades/", views.grades_view, name="grades"),
+    path('grades/new/', views.grade_create, name='grade_create'),
+    path('grades/<int:pk>/edit/', views.grade_edit, name='grade_edit'),
+    path('grades/<int:pk>/delete/', views.grade_delete, name='grade_delete'),
+    # Weitere URLs
     path("reports/", views.reports_view, name="reports"),
     path("admin-bereich/", views.admin_bereich_view, name="admin_bereich"),
 ]

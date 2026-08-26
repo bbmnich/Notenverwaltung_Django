@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Avg
-from .forms import StudentForm
-from .forms import CourseForm
+from .forms import CourseForm, GradeForm, StudentForm
 from .models import Student, Course, Grade
 
 
@@ -100,6 +99,40 @@ def course_delete(request, pk):
 def grades_view(request):
     grades = Grade.objects.all().order_by("student__last_name")  # Nach Nachname sortieren
     return render(request, "grades.html", {"grades": grades})
+
+
+# --- Note erfassen (Create) ---
+def grade_create(request):
+    if request.method == "POST":
+        form = GradeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("grades")
+    else:
+        form = GradeForm()
+    return render(request, "grade_form.html", {"form": form})
+
+
+# --- Note bearbeiten (Edit) ---
+def grade_edit(request, pk):
+    grade = get_object_or_404(Grade, pk=pk)
+    if request.method == "POST":
+        form = GradeForm(request.POST, instance=grade)
+        if form.is_valid():
+            form.save()
+            return redirect("grades")
+    else:
+        form = GradeForm(instance=grade)
+    return render(request, "grade_form.html", {"form": form, "grade": grade})
+
+
+# --- Note löschen (Delete) ---
+def grade_delete(request, pk):
+    grade = get_object_or_404(Grade, pk=pk)
+    if request.method == "POST":
+        grade.delete()
+        return redirect("grades")
+    return render(request, "grade_delete.html", {"grade": grade})
 
 
 def admin_bereich_view(request):

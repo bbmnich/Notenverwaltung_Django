@@ -1,6 +1,6 @@
 import re
 from django import forms
-from .models import Student, Course
+from .models import Student, Course, Grade
 
 
 # ==========================================
@@ -48,3 +48,10 @@ class CourseForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Kursname"}),
             "max_score": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Maximale Punktzahl"}),
         }
+# ==========================================
+# FORMULAR FÜR NOTEN
+# ==========================================
+class GradeForm(forms.ModelForm):
+    class Meta:
+        model = Grade
+        fields = ['student', 'course', 'score']
