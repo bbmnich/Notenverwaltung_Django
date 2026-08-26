@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Kurs löschen - Grade Tracker</title>
+    <style>
+        /* Layout */
+        body {
+            background-color: #0b0b0f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .box {
+            background-color: #16161e;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #8b8b9e;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        strong {
+            color: #ffffff;
+        }
+
+        /* Löschen-Button */
+        .btn-delete {
+            background-color: #eb0879;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.9;
+        }
+
+        /* Abbrechen */
+        .btn-cancel {
+            color: #8b8b9e;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 16px;
+        }
+
+        .btn-cancel:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+            <!-- Überschrift -->
+            <h1>Kurs löschen</h1>
+
+            <!-- Sicherheitsabfrage -->
+            <p>Bist du dir sicher, dass du den Kurs <strong>"{{ course.name }}"</strong> unwiderruflich löschen
+                möchtest?</p>
+
+            <!-- Formular zum Löschen -->
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">Ja, löschen</button>
+                <a href="{% url 'courses' %}" class="btn-cancel">Abbrechen</a>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

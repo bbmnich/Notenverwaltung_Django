@@ -94,7 +94,7 @@ def course_delete(request, pk):
     if request.method == "POST":
         course.delete()
         return redirect("courses")
-    return render(request, "course_confirm_delete.html", {"course": course})
+    return render(request, "course_delete.html", {"course": course})
 
 
 def grades_view(request):
