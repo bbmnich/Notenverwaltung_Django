@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Avg
 from .forms import CourseForm, GradeForm, StudentForm
 from .models import Student, Course, Grade
+import csv
+from django.http import HttpResponse
+import io
+from django.contrib import messages
 
 
 def dashboard_view(request):
@@ -101,7 +105,7 @@ def grades_view(request):
     return render(request, "grades.html", {"grades": grades})
 
 
-# --- Note erfassen (Create) ---
+#   Note erfassen
 def grade_create(request):
     if request.method == "POST":
         form = GradeForm(request.POST)
@@ -113,7 +117,7 @@ def grade_create(request):
     return render(request, "grade_form.html", {"form": form})
 
 
-# --- Note bearbeiten (Edit) ---
+#   Note bearbeiten
 def grade_edit(request, pk):
     grade = get_object_or_404(Grade, pk=pk)
     if request.method == "POST":
@@ -126,7 +130,7 @@ def grade_edit(request, pk):
     return render(request, "grade_form.html", {"form": form, "grade": grade})
 
 
-# --- Note löschen (Delete) ---
+#   Note löschen (Delete)
 def grade_delete(request, pk):
     grade = get_object_or_404(Grade, pk=pk)
     if request.method == "POST":
@@ -140,14 +144,74 @@ def admin_bereich_view(request):
 
 
 def reports_view(request):
-    # Durchschnittsnote pro Student
-    student_averages = Student.objects.annotate(avg_score=Avg("grade__score"))
+    # Notendurchschnitt pro Student
+    students = Student.objects.annotate(avg_score=Avg("grade__score"))
 
-    # Durchschnittsnote pro Kurs
-    course_averages = Course.objects.annotate(avg_score=Avg("grade__score"))
+    # Notendurchschnitt pro Kurs
+    courses = Course.objects.annotate(avg_score=Avg("grade__score"))
 
     context = {
-        "student_averages": student_averages,
-        "course_averages": course_averages,
+        "student_averages": students,
+        "course_averages": courses,
     }
     return render(request, "reports.html", context)
+
+
+# CSV EXPORT
+
+
+def export_grades_csv(request):
+    # Erstellt ein HTTP-Response zum herunterladen
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="noten_export.csv"'
+
+    # UTF-8 BOM für Excel, damit (ä, ö, ü) korrekt angezeigt werden
+    response.write("\ufeff".encode("utf8"))
+
+    writer = csv.writer(response, delimiter=";")
+
+    # Kopfzeile
+    writer.writerow(["Vorname", "Nachname", "Kurs", "Note"])
+
+    # Alle Noten aus der Datenbank
+    grades = Grade.objects.all().select_related("student", "course")
+    for grade in grades:
+        writer.writerow([grade.student.first_name, grade.student.last_name, grade.course.name, grade.score])
+
+    return response
+
+
+# CSV IMPORT
+
+
+def import_grades_csv(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        # Prüfen, ob es eine CSV-Datei ist
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, "Bitte lade eine gültige .csv-Datei hoch.")
+            return redirect("dashboard")
+
+        # Datei lesen
+        decoded_file = csv_file.read().decode("utf-8")
+        io_string = io.StringIO(decoded_file)
+        reader = csv.reader(io_string, delimiter=";")
+
+        next(reader)  # Kopfzeile nicht importieren (Vorname;Nachname;Kurs;Note)
+
+        for row in reader:
+            if len(row) >= 4:
+                first_name, last_name, course_name, score = row[0], row[1], row[2], row[3]
+
+                # Student und Kurs in der Datenbank suchen oder erstellen
+                student, _ = Student.objects.get_or_create(first_name=first_name, last_name=last_name)
+                course, _ = Course.objects.get_or_create(name=course_name)
+
+                # Note übernehmen
+                Grade.objects.create(student=student, course=course, score=score)
+
+        messages.success(request, "Noten wurden erfolgreich importiert!")
+        return redirect("grades")
+
+    return render(request, "import_csv.html")

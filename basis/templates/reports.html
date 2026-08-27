@@ -75,7 +75,7 @@
                 {% for student in student_averages %}
                 <li
                     style="padding: 10px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between;">
-                    <span>{{ student.name }}</span>
+                    <span>{{ student.first_name }} {{ student.last_name }}</span>
                     <strong style="color: #8b8b9e;">
                         {% if student.avg_score %}
                         {{ student.avg_score|floatformat:2 }} Pkt.

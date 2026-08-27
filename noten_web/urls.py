@@ -23,4 +23,7 @@ urlpatterns = [
     # Weitere URLs
     path("reports/", views.reports_view, name="reports"),
     path("admin-bereich/", views.admin_bereich_view, name="admin_bereich"),
+    # CSV Import und Export URLs
+    path('export/csv/', views.export_grades_csv, name='export_grades_csv'),
+    path('import/csv/', views.import_grades_csv, name='import_grades_csv'),
 ]
