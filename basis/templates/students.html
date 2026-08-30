@@ -19,6 +19,16 @@
             margin: 0 auto;
         }
 
+        /* System-Haupttitel */
+        .system-titel {
+            font-size: 20px;
+            color: #8b8b9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -92,7 +102,11 @@
 
 <body>
     <div class="container">
-        <!-- Navigation -->
+
+        <!-- System-Titel -->
+        <div class="system-titel">Notenverwaltung</div>
+        
+        <!-- Hauptmenü -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'students' %}" class="aktiv">Students</a>

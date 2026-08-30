@@ -19,6 +19,25 @@
             margin: 0 auto;
         }
 
+        /* System-Haupttitel */
+        .system-titel {
+            font-size: 20px;
+            color: #8b8b9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .system-titel {
+            font-size: 20px;
+            color: #8b8b9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -99,6 +118,10 @@
 
 <body>
     <div class="container">
+
+        <!-- System-Titel -->
+        <div class="system-titel">Notenverwaltung</div>
+
         <!-- Navigation -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
@@ -121,7 +144,7 @@
                         <th style="text-align: left; padding: 10px;">Student</th>
                         <th style="text-align: left; padding: 10px;">Kurs</th>
                         <th style="text-align: center; padding: 10px;">Note</th>
-                        <th style="text-align: right; padding: 10px;">Aktionen</th>
+                        <th style="text-align: right; padding: 10px;"></th>
                     </tr>
                 </thead>
                 <tbody>

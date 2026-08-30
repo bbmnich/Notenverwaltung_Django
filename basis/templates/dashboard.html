@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - Notenverwaltung</title>
+    <title>Notenverwaltung</title>
     <style>
         body {
             background-color: #0b0b0f;
@@ -19,6 +19,16 @@
             margin: 0 auto;
         }
 
+        /* System-Haupttitel */
+        .system-titel {
+            font-size: 20px;
+            color: #8b8b9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -31,6 +41,7 @@
             color: #8b8b9e;
             text-decoration: none;
             font-weight: bold;
+            outline: none;
         }
 
         .nav-leiste a.aktiv {
@@ -53,7 +64,7 @@
             font-size: 16px;
         }
 
-        /*Export-Button */
+        /* Export-Button */
         .btn-export {
             background-color: #eb0879;
             color: white;
@@ -75,6 +86,10 @@
 <body>
 
     <div class="container">
+
+        <!-- System-Titel -->
+        <div class="system-titel">Notenverwaltung</div>
+
         <!-- Hauptmenü -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}" class="aktiv">Dashboard</a>
@@ -85,11 +100,9 @@
             <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
         </div>
 
-
         <div class="box">
             <h1>Dashboard</h1>
             <p style="color: #8b8b9e; margin-bottom: 25px;">Willkommen in deiner Notenverwaltung!</p>
-
 
             <div style="display: flex; gap: 20px; margin-top: 20px;">
 
@@ -120,7 +133,7 @@
             <div style="margin-top: 30px; display: flex; gap: 15px; align-items: center;">
 
                 <!-- Export-Button -->
-                <a href="{% url 'export_grades_csv' %}" class="btn-export">⬇️ Noten als Excel exportieren</a>
+                <a href="{% url 'export_grades_csv' %}" class="btn-export">⬇️ Noten exportieren</a>
 
                 <!-- Import-Formular mit direktem Datei-Dialog -->
                 <form method="post" action="{% url 'import_grades_csv' %}" enctype="multipart/form-data"
@@ -139,8 +152,8 @@
 
             </div>
 
-        </div> <!-- Ende der .box -->
-    </div> <!-- Ende des .container -->
+        </div>
+    </div>
 </body>
 
 </html>

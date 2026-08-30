@@ -9,12 +9,12 @@ from django.contrib import messages
 
 
 def dashboard_view(request):
-    # Gesamtzahl der jeweiligen Einträge aus der Datenbank ermitteln
+    # Gesamtzahl der Einträge aus der Datenbank ermitteln
     student_count = Student.objects.count()  # Zählt alle Datensätze in der Student-Tabelle
     course_count = Course.objects.count()  # Zählt alle Datensätze in der Course-Tabelle
     grade_count = Grade.objects.count()  # Zählt alle Datensätze in der Grade-Tabelle
 
-    # Daten zusammenbündeln, um sie an das HTML-Template zu übergeben
+    # Variablen in ein Dictionary verpacken für die Template-Übergabe
     context = {
         "student_count": student_count,
         "course_count": course_count,
@@ -161,11 +161,11 @@ def reports_view(request):
 
 
 def export_grades_csv(request):
-    # Erstellt ein HTTP-Response zum herunterladen
+    # CSV-Download vorbereiten und Dateinamen für den Export festlegen
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="noten_export.csv"'
 
-    # UTF-8 BOM für Excel, damit (ä, ö, ü) korrekt angezeigt werden
+    # Verhindert Darstellungsfehler von Umlauten beim Öffnen in Excel
     response.write("\ufeff".encode("utf8"))
 
     writer = csv.writer(response, delimiter=";")
@@ -202,11 +202,19 @@ def import_grades_csv(request):
 
         for row in reader:
             if len(row) >= 4:
-                first_name, last_name, course_name, score = row[0], row[1], row[2], row[3]
+                first_name, last_name, course_name, score_raw = row[0], row[1], row[2], row[3]
 
                 # Student und Kurs in der Datenbank suchen oder erstellen
                 student, _ = Student.objects.get_or_create(first_name=first_name, last_name=last_name)
-                course, _ = Course.objects.get_or_create(name=course_name)
+                
+                # max_score als Standardwert gesetzt, falls der Kurs neu ist
+                course, _ = Course.objects.get_or_create(
+                    name=course_name, 
+                    defaults={'max_score': 100}
+                )
+
+                # Dezimalzahlen in ganze Zahlen umwandeln
+                score = int(float(score_raw))
 
                 # Note übernehmen
                 Grade.objects.create(student=student, course=course, score=score)

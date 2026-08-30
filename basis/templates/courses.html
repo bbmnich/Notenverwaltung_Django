@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Courses - Grade Tracker</title>
     <style>
-        /* GRUNDLEGENDES SEITEN-DESIGN*/
+        /*SEITEN-DESIGN*/
         body {
             background-color: #0b0b0f;
             color: #ffffff;
@@ -19,7 +19,17 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        /* NAVIGATIONSSLEISTE OBEN */
+        /* System-Haupttitel */
+        .system-titel {
+            font-size: 20px;
+            color: #8b8b9e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* NAVIGATIONSSLEISTE */
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -37,6 +47,7 @@
         .nav-leiste a.aktiv {
             color: #ffffff;
         }
+
         /* HAUPTINHALT */
         .box {
             background-color: #16161e;
@@ -88,6 +99,11 @@
 
 <body>
     <div class="container">
+
+        <!-- System-Titel -->
+        <div class="system-titel">Notenverwaltung</div>
+
+        <!-- Hauptmenü -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'students' %}">Students</a>
@@ -96,7 +112,7 @@
             <a href="{% url 'reports' %}">Reports</a>
             <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
         </div>
-        <!-- Hauptbereich für Kurse --> 
+        <!-- Bereich für Kurse -->
         <div class="box">
             <h1>Kurse</h1>
 
@@ -109,7 +125,7 @@
                     style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>{{ course.name }}</strong>
-                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{ course.max_score }})</span>
+                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{course.max_score }})</span>
                     </div>
                     <div class="course-actions">
                         <!-- Bearbeiten-Button -->
