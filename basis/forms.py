@@ -12,9 +12,7 @@ class StudentForm(forms.ModelForm):
         fields = ["first_name", "last_name", "email"]
         widgets = {
             "first_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Vorname (z. B. Anna-Maria)"}),
-            "last_name": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Nachname (z. B. Müller-Schmidt)"}
-            ),
+            "last_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nachname (z. B. Müller-Schmidt)"}),
             "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "E-Mail-Adresse"}),
         }
 

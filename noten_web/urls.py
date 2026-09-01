@@ -7,7 +7,7 @@ urlpatterns = [
     path("", views.dashboard_view, name="dashboard"),
     # Students URLs
     path("students/", views.students_view, name="students"),
-    path("students/new/", views.student_create_view, name="student_create"),
+    path("students/new/", views.student_create, name="student_create"),
     path("students/<int:pk>/edit/", views.student_edit, name="student_edit"),
     path("students/<int:pk>/delete/", views.student_delete, name="student_delete"),
     # Courses URLs
@@ -26,4 +26,5 @@ urlpatterns = [
     # CSV Import und Export URLs
     path('export/csv/', views.export_grades_csv, name='export_grades_csv'),
     path('import/csv/', views.import_grades_csv, name='import_grades_csv'),
+    path('students/bulk-delete/', views.student_bulk_delete, name='student_bulk_delete'),
 ]

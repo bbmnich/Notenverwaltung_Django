@@ -18,6 +18,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+
         /* System-Haupttitel */
         .system-titel {
             font-size: 20px;
@@ -51,6 +52,7 @@
             border: 1px solid #2a2a35;
             border-radius: 12px;
             padding: 30px;
+            margin-bottom: 25px;
         }
 
         h1 {
@@ -80,48 +82,72 @@
             <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
         </div>
 
+        <!-- Allgemeine Statistiken -->
         <div class="box">
             <h1>Reports</h1>
             <p style="color: #8b8b9e; margin-bottom: 25px;">Berichte, Statistiken und Notendurchschnitte.</p>
 
-            <h3 style="margin-top: 20px; color: #fff; font-size: 18px;">Notendurchschnitt pro Student</h3>
-            <ul style="list-style-type: none; padding: 0;">
+            <div style="display: flex; gap: 20px;">
+                <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
+                    <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Gesamtdurchschnitt</h3>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">{{ overall_avg }} Pkt.</p>
+                </div>
+                <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
+                    <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Höchste Note</h3>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #2ecc71;">{% if highest_grade %}{{ highest_grade }} Pkt.{% else %}–{% endif %}</p>
+                </div>
+                <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
+                    <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Niedrigste Note</h3>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #e74c3c;">{% if lowest_grade %}{{ lowest_grade }} Pkt.{% else %}–{% endif %}</p>
+                </div>
+                <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
+                    <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Noten gesamt</h3>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">{{ total_grades }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notendurchschnitt pro Student -->
+        <div class="box">
+            <h3 style="margin-top: 0; color: #fff; font-size: 18px;">Notendurchschnitt pro Student</h3>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
                 {% for student in student_averages %}
-                <li
-                    style="padding: 10px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between;">
+                <li style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
                     <span>{{ student.first_name }} {{ student.last_name }}</span>
-                    <strong style="color: #8b8b9e;">
-                        {% if student.avg_score %}
-                        {{ student.avg_score|floatformat:2 }} Pkt.
-                        {% else %}
-                        Keine Noten
-                        {% endif %}
-                    </strong>
+                    <span style="color: #8b8b9e; font-size: 14px;">{{ student.grade_count }} Noten | 
+                        <strong style="color: #ffffff;">
+                            {% if student.avg_score %}{{ student.avg_score|floatformat:2 }} Pkt.{% else %}Keine Noten{% endif %}
+                        </strong>
+                    </span>
                 </li>
                 {% empty %}
                 <li style="color: #8b8b9e;">Keine Studenten vorhanden.</li>
                 {% endfor %}
             </ul>
+        </div>
 
-            <h3 style="margin-top: 30px; color: #fff; font-size: 18px;">Durchschnitt pro Kurs</h3>
-            <ul style="list-style-type: none; padding: 0;">
+        <!-- Durchschnitt pro Kurs -->
+        <div class="box">
+            <h3 style="margin-top: 0; color: #fff; font-size: 18px;">Durchschnitt und Details pro Kurs</h3>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
                 {% for course in course_averages %}
-                <li
-                    style="padding: 10px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between;">
+                <li style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
                     <span>{{ course.name }}</span>
-                    <strong style="color: #8b8b9e;">
-                        {% if course.avg_score %}
-                        {{ course.avg_score|floatformat:2 }} Pkt.
-                        {% else %}
-                        Keine Noten
-                        {% endif %}
-                    </strong>
+                    <span style="color: #8b8b9e; font-size: 14px;">
+                        Anzahl: {{ course.grade_count }} | 
+                        Max: {% if course.highest_score %}{{ course.highest_score }}{% else %}–{% endif %} | 
+                        Min: {% if course.lowest_score %}{{ course.lowest_score }}{% else %}–{% endif %} | 
+                        <strong style="color: #ffffff;">
+                            {% if course.avg_score %}{{ course.avg_score|floatformat:2 }} Pkt.{% else %}Keine Noten{% endif %}
+                        </strong>
+                    </span>
                 </li>
                 {% empty %}
                 <li style="color: #8b8b9e;">Keine Kurse vorhanden.</li>
                 {% endfor %}
             </ul>
         </div>
+
     </div>
 </body>
 
