@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Student erfassen</title>
+    <style>
+        /* Layout */
+        body {
+            background-color: #0b0b0f;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .box { background-color: #16161e; border: 1px solid #2a2a35; border-radius: 12px; padding: 30px; }
+        
+        /* Eingabefelder */
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            background-color: #0b0b0f; 
+            border: 1px solid #2a2a35; 
+            color: #fff; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            margin-bottom: 15px; 
+        }
+        
+        /* Speichern */
+        button { 
+            background-color: #eb0879; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+
+        /* Abbrechen */
+        .btn-cancel {
+            color: #8b8b9e !important;
+            text-decoration: none;
+            font-size: 16px;
+            margin-left: 20px;
+        }
+        .btn-cancel:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>Student erfassen</h1>
+            
+            <!-- Formular -->
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div style="display: flex; align-items: center; margin-top: 20px;">
+                    <button type="submit">Speichern</button>
+                    <a href="{% url 'students' %}" class="btn-cancel">Abbrechen</a>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</body>
+</html>

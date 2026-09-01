@@ -126,6 +126,22 @@
             <a href="{% url 'student_create' %}" class="btn-create"
                 style="display: inline-block; margin-bottom: 25px;">+ Neuen Studenten anlegen</a>
 
+                <!-- Suchformular für ID oder Nachname -->
+            <form method="get" style="margin-bottom: 25px; display: flex; gap: 10px;">
+                <input type="text" name="q" value="{{ query }}" placeholder="Nach ID oder Nachname suchen..." style="flex: 1; padding: 10px; background-color: #0b0b0f; border: 1px solid #2a2a35; border-radius: 6px; color: #ffffff;">
+                <button type="submit" class="btn-create" style="padding: 10px 20px; font-size: 16px;">Suchen</button>
+                {% if query %}
+                    <a href="{% url 'students' %}" style="background-color: #2a2a35; color: white; padding: 10px 15px; border-radius: 6px; text-decoration: none; display: flex; align-items: center;">Zurück</a>
+                {% endif %}
+            </form>
+
+            <!-- Fehlermeldung, falls die Suche keine Treffer liefert -->
+            {% if query and not students %}
+                <p style="color: #eb0879; background: #0b0b0f; border: 1px solid #2a2a35; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                    Student oder ID "{{ query }}" konnte nicht gefunden werden.
+                </p>
+            {% endif %}
+
             <!--Formular für Mehrfachlöschung -->
             <form method="POST" action="{% url 'student_bulk_delete' %}">
                 {% csrf_token %}

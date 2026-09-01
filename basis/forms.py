@@ -53,3 +53,6 @@ class GradeForm(forms.ModelForm):
     class Meta:
         model = Grade
         fields = ['student', 'course', 'score']
+        labels = {
+            "score": "Note",
+        }

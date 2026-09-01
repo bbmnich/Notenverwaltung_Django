@@ -94,11 +94,13 @@
                 </div>
                 <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
                     <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Höchste Note</h3>
-                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #2ecc71;">{% if highest_grade %}{{ highest_grade }} Pkt.{% else %}–{% endif %}</p>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #07ef68;">{% if highest_grade %}{{ highest_grade }} Pkt.{% else %}–{% endif %}</p>
                 </div>
                 <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
                     <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Niedrigste Note</h3>
-                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #e74c3c;">{% if lowest_grade %}{{ lowest_grade }} Pkt.{% else %}–{% endif %}</p>
+                    <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: #f10683;">{% if lowest_grade is not None %}{{ lowest_grade }} Pkt.{% else %}–{% endif %}
+
+                    </p>
                 </div>
                 <div style="background: #0b0b0f; border: 1px solid #2a2a35; padding: 20px; border-radius: 8px; flex: 1;">
                     <h3 style="margin: 0; color: #8b8b9e; font-size: 14px;">Noten gesamt</h3>
@@ -107,45 +109,14 @@
             </div>
         </div>
 
-        <!-- Notendurchschnitt pro Student -->
-        <div class="box">
-            <h3 style="margin-top: 0; color: #fff; font-size: 18px;">Notendurchschnitt pro Student</h3>
-            <ul style="list-style-type: none; padding: 0; margin: 0;">
-                {% for student in student_averages %}
-                <li style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ student.first_name }} {{ student.last_name }}</span>
-                    <span style="color: #8b8b9e; font-size: 14px;">{{ student.grade_count }} Noten | 
-                        <strong style="color: #ffffff;">
-                            {% if student.avg_score %}{{ student.avg_score|floatformat:2 }} Pkt.{% else %}Keine Noten{% endif %}
-                        </strong>
-                    </span>
-                </li>
-                {% empty %}
-                <li style="color: #8b8b9e;">Keine Studenten vorhanden.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Durchschnitt pro Kurs -->
-        <div class="box">
-            <h3 style="margin-top: 0; color: #fff; font-size: 18px;">Durchschnitt und Details pro Kurs</h3>
-            <ul style="list-style-type: none; padding: 0; margin: 0;">
-                {% for course in course_averages %}
-                <li style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ course.name }}</span>
-                    <span style="color: #8b8b9e; font-size: 14px;">
-                        Anzahl: {{ course.grade_count }} | 
-                        Max: {% if course.highest_score %}{{ course.highest_score }}{% else %}–{% endif %} | 
-                        Min: {% if course.lowest_score %}{{ course.lowest_score }}{% else %}–{% endif %} | 
-                        <strong style="color: #ffffff;">
-                            {% if course.avg_score %}{{ course.avg_score|floatformat:2 }} Pkt.{% else %}Keine Noten{% endif %}
-                        </strong>
-                    </span>
-                </li>
-                {% empty %}
-                <li style="color: #8b8b9e;">Keine Kurse vorhanden.</li>
-                {% endfor %}
-            </ul>
+        <!-- Diagramm: Bestanden / Nicht bestanden -->
+        <div class="box" style="text-align: center;">
+            <h3 style="margin-top: 0; color: #fff; font-size: 18px; margin-bottom: 20px;">Leistungsübersicht</h3>
+            {% if pass_fail_chart %}
+                <img src="data:image/png;base64,{{ pass_fail_chart }}" alt="Bestanden/Nicht Bestanden Diagramm" style="max-width: 100%; height: auto; border-radius: 8px;">
+            {% else %}
+                <p style="color: #8b8b9e;">Keine Daten für das Diagramm vorhanden.</p>
+            {% endif %}
         </div>
 
     </div>
