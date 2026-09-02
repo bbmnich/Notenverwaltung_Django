@@ -1,22 +1,36 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CourseForm, GradeForm, StudentForm
-from .models import Student, Course, Grade
+import base64
 import csv
-from django.http import HttpResponse
 import io
-from django.contrib import messages
 import matplotlib
-from django.db.models import Avg, Max, Min, Count, Q
-
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import io
-import base64
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.models import User, Group
+from django.db.models import Avg, Max, Min, Count, Q
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from .forms import CourseForm, GradeForm, StudentForm
+from .models import Student, Course, Grade
 
 
-# Dashboard-Ansicht mit Kennzahlen und Matplotlib-Notenverteilung
+# --- ROLLEN ---
+def is_super_admin(user):
+    return user.is_superuser
+
+
+def is_dozent(user):
+    return user.is_superuser or user.groups.filter(name="Dozent").exists()
+
+
+def is_student(user):
+    return user.groups.filter(name="Student").exists()
+
+
+# Dashboard-Ansicht mit Kennzahlen
 def dashboard_view(request):
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
     student_count = Student.objects.count()
     course_count = Course.objects.count()
     grade_count = Grade.objects.count()
@@ -32,7 +46,6 @@ def dashboard_view(request):
         fig.patch.set_facecolor("#16161e")
         ax.set_facecolor("#16161e")
 
-        # Noten als Text konvertieren, um Lücken im Diagramm zu vermeiden
         score_labels = [str(s) for s in scores]
 
         ax.bar(score_labels, counts, color="#8b5cf6", width=0.6, alpha=0.9)
@@ -68,11 +81,13 @@ def dashboard_view(request):
         "course_count": course_count,
         "grade_count": grade_count,
         "chart_image": chart_image,
+        "is_dozent_or_admin": is_dozent_or_admin,
     }
     return render(request, "dashboard.html", context)
 
 
-# Neuen Studenten anlegen
+# Neuen Studenten anlegen -für Dozenten ,Super-Admins
+@user_passes_test(is_dozent)
 def student_create(request):
     if request.method == "POST":
         form = StudentForm(request.POST)
@@ -84,7 +99,8 @@ def student_create(request):
     return render(request, "student_form.html", {"form": form})
 
 
-# Studenten bearbeiten
+# Studenten bearbeiten -für Dozenten ,Super-Admins
+@user_passes_test(is_dozent)
 def student_edit(request, pk):
     student = get_object_or_404(Student, pk=pk)
     if request.method == "POST":
@@ -97,7 +113,8 @@ def student_edit(request, pk):
     return render(request, "student_edit.html", {"form": form, "student": student})
 
 
-# Studenten löschen
+# Studenten löschen -für Dozenten, Super-Admins
+@user_passes_test(is_dozent)
 def student_delete(request, pk):
     student = get_object_or_404(Student, pk=pk)
     if request.method == "POST":
@@ -106,34 +123,33 @@ def student_delete(request, pk):
     return render(request, "student_delete.html", {"student": student})
 
 
-# Liste aller Studenten anzeigen (absteigend nach ID)
+# Liste aller Studenten anzeigen (Suche nach ID oder Nachname)
 def students_view(request):
-    # Suchbegriff auslesen und Leerzeichen entfernen
-    query = request.GET.get('q', '').strip()
-    
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    query = request.GET.get("q", "").strip()
+
     if query:
-        # Suche nach student_id oder Nachname
-        students = Student.objects.filter(
-            Q(student_id__icontains=query) | Q(last_name__icontains=query)
-        )
+        students = Student.objects.filter(Q(student_id__icontains=query) | Q(last_name__icontains=query))
     else:
-        # Alle Studenten anzeigen
         students = Student.objects.all()
 
     context = {
         "students": students,
         "query": query,
+        "is_dozent_or_admin": is_dozent_or_admin,
     }
     return render(request, "students.html", context)
 
 
 # Liste aller Kurse anzeigen
 def course_list(request):
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
     courses = Course.objects.all()
-    return render(request, "courses.html", {"courses": courses})
+    return render(request, "courses.html", {"courses": courses, "is_dozent_or_admin": is_dozent_or_admin})
 
 
 # Neuen Kurs erstellen
+@user_passes_test(is_dozent)
 def course_create(request):
     if request.method == "POST":
         form = CourseForm(request.POST)
@@ -146,6 +162,7 @@ def course_create(request):
 
 
 # Bestehenden Kurs bearbeiten
+@user_passes_test(is_dozent)
 def course_edit(request, pk):
     course = get_object_or_404(Course, pk=pk)
     if request.method == "POST":
@@ -159,6 +176,7 @@ def course_edit(request, pk):
 
 
 # Kurs löschen
+@user_passes_test(is_dozent)
 def course_delete(request, pk):
     course = get_object_or_404(Course, pk=pk)
     if request.method == "POST":
@@ -167,13 +185,21 @@ def course_delete(request, pk):
     return render(request, "course_delete.html", {"course": course})
 
 
-# Liste aller Noten sortiert nach Nachname anzeigen
+# Liste aller Noten anzeigen (für Dozenten alle, für Studenten nur die eigenen)
 def grades_view(request):
-    grades = Grade.objects.all().order_by("student__last_name")
-    return render(request, "grades.html", {"grades": grades})
-
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    
+    if is_dozent_or_admin:
+        grades = Grade.objects.all().order_by("student__last_name")
+    elif hasattr(request.user, "student_profile") and request.user.student_profile:
+        grades = Grade.objects.filter(student=request.user.student_profile).order_by("course__name")
+    else:
+        grades = Grade.objects.none()
+        
+    return render(request, "grades.html", {"grades": grades, "is_dozent_or_admin": is_dozent_or_admin})
 
 # Einzelne Note erfassen
+@user_passes_test(is_dozent)
 def grade_create(request):
     if request.method == "POST":
         form = GradeForm(request.POST)
@@ -186,6 +212,7 @@ def grade_create(request):
 
 
 # Note bearbeiten
+@user_passes_test(is_dozent)
 def grade_edit(request, pk):
     grade = get_object_or_404(Grade, pk=pk)
     if request.method == "POST":
@@ -199,6 +226,7 @@ def grade_edit(request, pk):
 
 
 # Note löschen
+@user_passes_test(is_dozent)
 def grade_delete(request, pk):
     grade = get_object_or_404(Grade, pk=pk)
     if request.method == "POST":
@@ -206,22 +234,19 @@ def grade_delete(request, pk):
         return redirect("grades")
     return render(request, "grade_delete.html", {"grade": grade})
 
-    # Zeigt die Admin-Oberfläche an
-    return render(request, "admin_bereich.html")
-
 
 # Auswertungen und Statistiken für Studenten und Kurse
 def reports_view(request):
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
     total_grades = Grade.objects.count()
     overall_avg = Grade.objects.aggregate(Avg("score"))["score__avg"] or 0
     highest_grade = Grade.objects.aggregate(Max("score"))["score__max"]
     lowest_grade = Grade.objects.aggregate(Min("score"))["score__min"]
-    # Bestanden und Nicht bestanden ermitteln (Grenze: 50 Pkt.)
+
     passed_count = Grade.objects.filter(score__gte=50).count()
     failed_count = Grade.objects.filter(score__lt=50).count()
     pass_rate = round((passed_count / total_grades * 100), 1) if total_grades > 0 else 0
 
-    # Diagramm Bestanden / Nicht bestanden
     fig, ax = plt.subplots(figsize=(6, 4))
     fig.patch.set_facecolor("#16161e")
     ax.set_facecolor("#16161e")
@@ -241,7 +266,7 @@ def reports_view(request):
 
     ax.set_title("Gesamtübersicht: Bestanden vs. Nicht bestanden", fontsize=12, pad=15, color="#ffffff")
     ax.set_ylabel("Anzahl der Studenten", fontsize=10, color="#ffffff")
-    # Werte mit Balken darstellen
+
     for bar in bars:
         height = bar.get_height()
         ax.annotate(
@@ -254,15 +279,15 @@ def reports_view(request):
             color="#ffffff",
             fontsize=10,
         )
-        plt.tight_layout()
-    # Diagramm im Speicher und in Base64 konvertieren
+    plt.tight_layout()
+
     buffer = io.BytesIO()
     plt.savefig(buffer, format="png", facecolor=fig.get_facecolor(), edgecolor="none")
     buffer.seek(0)
     pass_fail_chart = base64.b64encode(buffer.read()).decode("utf-8")
     buffer.close()
     plt.close(fig)
-    # Detaildaten für Studenten und Kurse
+
     students = Student.objects.annotate(
         passed_count=Count("grade", filter=Q(grade__score__gte=50)),
         failed_count=Count("grade", filter=Q(grade__score__lt=50)),
@@ -275,7 +300,7 @@ def reports_view(request):
         highest_score=Max("grade__score"),
         lowest_score=Min("grade__score"),
     )
-    # Wertepakete an das HTML-Template senden
+
     context = {
         "total_grades": total_grades,
         "overall_avg": round(overall_avg, 2),
@@ -287,6 +312,7 @@ def reports_view(request):
         "student_averages": students,
         "course_averages": courses,
         "pass_fail_chart": pass_fail_chart,
+        "is_dozent_or_admin": is_dozent_or_admin,
     }
     return render(request, "reports.html", context)
 
@@ -295,7 +321,7 @@ def reports_view(request):
 def export_grades_csv(request):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="noten_export.csv"'
-    response.write("\ufeff".encode("utf8"))  # UTF-8 BOM für Excel-Kompatibilität
+    response.write("\ufeff".encode("utf8"))
 
     writer = csv.writer(response, delimiter=";")
     writer.writerow(["Vorname", "Nachname", "Kurs", "Note"])
@@ -308,6 +334,7 @@ def export_grades_csv(request):
 
 
 # Noten aus CSV-Datei importieren
+@user_passes_test(is_dozent)
 def import_grades_csv(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -320,7 +347,7 @@ def import_grades_csv(request):
         io_string = io.StringIO(decoded_file)
         reader = csv.reader(io_string, delimiter=";")
 
-        next(reader)  # Kopfzeile überspringen
+        next(reader)
 
         for row in reader:
             if len(row) >= 5:
@@ -346,6 +373,7 @@ def import_grades_csv(request):
 
 
 # Mehrere ausgewählte Studenten löschen
+@user_passes_test(is_dozent)
 def student_bulk_delete(request):
     if request.method == "POST":
         selected_ids = request.POST.getlist("selected_students")
@@ -358,5 +386,55 @@ def student_bulk_delete(request):
 
 
 # Admin-Bereich
+@user_passes_test(is_super_admin)
 def admin_bereich_view(request):
-    return render(request, "admin_bereich.html")
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        group_name = request.POST.get("group_name")
+
+        if username and password:
+            if User.objects.filter(username=username).exists():
+                messages.error(request, f"Der Benutzername '{username}' existiert bereits.")
+            else:
+                user = User.objects.create_user(username=username, email=email, password=password)
+
+                if group_name:
+                    try:
+                        group = Group.objects.get(name=group_name)
+                        user.groups.add(group)
+                    except Group.DoesNotExist:
+                        pass
+
+                messages.success(
+                    request, f"Benutzer '{username}' wurde erfolgreich als {group_name or 'Standard'} erstellt!"
+                )
+                return redirect("admin_bereich")
+
+    users = User.objects.prefetch_related("groups", "student_profile").all()
+    groups = Group.objects.all()
+
+    context = {
+        "users": users,
+        "groups": groups,
+    }
+    return render(request, "admin_bereich.html", context)
+
+
+# Kurs-Anmeldung für Studenten
+@login_required
+def course_enroll(request, pk):
+    course = get_object_or_404(Course, pk=pk)
+
+    if hasattr(request.user, "student_profile") and request.user.student_profile:
+        student = request.user.student_profile
+        if course in student.enrolled_courses.all():
+            messages.warning(request, f"Du bist bereits für den Kurs '{course.name}' angemeldet.")
+        else:
+            course.students.add(student)
+            messages.success(request, f"Du hast dich erfolgreich für '{course.name}' angemeldet.")
+    else:
+        messages.error(request, "Nur vorhandene Studenten können sich zu Kursen anmelden.")
+
+    return redirect("courses")

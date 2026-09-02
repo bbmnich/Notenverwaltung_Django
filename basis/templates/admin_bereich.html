@@ -19,7 +19,6 @@
             margin: 0 auto;
         }
 
-        /* System-Haupttitel */
         .system-titel {
             font-size: 20px;
             color: #8b8b9e;
@@ -52,43 +51,180 @@
             border: 1px solid #2a2a35;
             border-radius: 12px;
             padding: 30px;
+            margin-bottom: 30px;
         }
 
-        h1 {
-            font-size: 24px;
+        h1,
+        h2 {
+            font-size: 22px;
             margin-top: 0;
         }
 
-        p {
-            font-size: 16px;
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            background-color: #0b0b0f;
+            border: 1px solid #2a2a35;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        label {
+            color: #8b8b9e;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background-color: #eb0879;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2a2a35;
+            font-size: 14px;
+        }
+
+        th {
+            color: #8b8b9e;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
-
-        <!-- System-Titel -->
         <div class="system-titel">Notenverwaltung</div>
-        
-        <!-- Hauptmenü -->
+
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'students' %}">Students</a>
             <a href="{% url 'courses' %}">Courses</a>
             <a href="{% url 'grades' %}">Grades</a>
             <a href="{% url 'reports' %}">Reports</a>
+            {% if request.user.is_superuser %}
             <a href="{% url 'admin_bereich' %}" class="aktiv" style="color: #eb0879;">Admin</a>
-        </div>
+            {% endif %}
 
-        <!-- Der Inhalt für den Admin-Bereich -->
-        <div class="box">
-            <h1>Admin-Bereich</h1>
-            <p style="color: #8b8b9e;">Daten verwalten.</p>
+            <!-- Abmelden-Link  -->
+            <form action="{% url 'logout' %}" method="post" style="display: inline; margin-left: auto;">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background: none; border: none; color: #eb0879; font-weight: bold; cursor: pointer; font-size: 16px; padding: 0;">Abmelden</button>
+            </form>
         </div>
     </div>
 
+    <!-- Nachrichten anzeigen -->
+    {% if messages %}
+    <ul style="list-style: none; padding: 0; margin-bottom: 20px;">
+        {% for message in messages %}
+        <li
+            style="padding: 10px; border-radius: 6px; background-color: #16161e; border: 1px solid #2a2a35; color: {% if message.tags == 'error' %}#eb0879{% else %}#10b981{% endif %};">
+            {{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Neuen Benutzer anlegen -->
+    <div class="box">
+        <h2>Neuen Benutzer anlegen</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <label>Benutzername</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div>
+                    <label>E-Mail-Adresse</label>
+                    <input type="email" name="email">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <label>Passwort</label>
+                    <input type="password" name="password" required>
+                </div>
+                <div>
+                    <label>Rolle / Gruppe</label>
+                    <select name="group_name">
+                        <option value="">-- Keine Gruppe --</option>
+                        {% for group in groups %}
+                        <option value="{{ group.name }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit">Benutzer erstellen</button>
+        </form>
+    </div>
+
+    <!--Benutzer verwalten -->
+    <div class="box">
+        <h2>Vorhandene Benutzer</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Benutzername</th>
+                    <th>E-Mail</th>
+                    <th>Rolle / Gruppe</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.email|default:"Keine Angabe" }}</td>
+                    <td>
+                        {% if u.is_superuser %}
+                        <span style="color: #eb0879; font-weight: bold;">Super Admin</span>
+                        {% elif u.groups.all %}
+                        {{ u.groups.all.0.name }}
+                        {% else %}
+                        <span style="color: #8b8b9e;">Keine Rolle</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                        <span style="color: #10b981;">Aktiv</span>
+                        {% else %}
+                        <span style="color: #eb0879;">Inaktiv</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="color: #8b8b9e;">Keine Benutzer gefunden.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
 </body>
 
 </html>

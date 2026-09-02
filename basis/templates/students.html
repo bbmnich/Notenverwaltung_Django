@@ -122,32 +122,37 @@
             <!-- Titel -->
             <h1 style="margin-top: 0; margin-bottom: 15px;">Students</h1>
 
-            <!-- Neuen Studenten zur Datenbank hinzufügen -->
+            <!-- Neuen Studenten zur Datenbank hinzufügen (Nur für Dozenten/Admins) -->
+            {% if is_dozent_or_admin %}
             <a href="{% url 'student_create' %}" class="btn-create"
                 style="display: inline-block; margin-bottom: 25px;">+ Neuen Studenten anlegen</a>
+            {% endif %}
 
-                <!-- Suchformular für ID oder Nachname -->
+            <!-- Suchformular für ID oder Nachname (Bleibt für alle sichtbar) -->
             <form method="get" style="margin-bottom: 25px; display: flex; gap: 10px;">
-                <input type="text" name="q" value="{{ query }}" placeholder="Nach ID oder Nachname suchen..." style="flex: 1; padding: 10px; background-color: #0b0b0f; border: 1px solid #2a2a35; border-radius: 6px; color: #ffffff;">
+                <input type="text" name="q" value="{{ query }}" placeholder="Nach ID oder Nachname suchen..."
+                    style="flex: 1; padding: 10px; background-color: #0b0b0f; border: 1px solid #2a2a35; border-radius: 6px; color: #ffffff;">
                 <button type="submit" class="btn-create" style="padding: 10px 20px; font-size: 16px;">Suchen</button>
                 {% if query %}
-                    <a href="{% url 'students' %}" style="background-color: #2a2a35; color: white; padding: 10px 15px; border-radius: 6px; text-decoration: none; display: flex; align-items: center;">Zurück</a>
+                <a href="{% url 'students' %}"
+                    style="background-color: #2a2a35; color: white; padding: 10px 15px; border-radius: 6px; text-decoration: none; display: flex; align-items: center;">Zurück</a>
                 {% endif %}
             </form>
 
             <!-- Fehlermeldung, falls die Suche keine Treffer liefert -->
             {% if query and not students %}
-                <p style="color: #eb0879; background: #0b0b0f; border: 1px solid #2a2a35; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-                    Student oder ID "{{ query }}" konnte nicht gefunden werden.
-                </p>
+            <p
+                style="color: #eb0879; background: #0b0b0f; border: 1px solid #2a2a35; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                Student oder ID "{{ query }}" konnte nicht gefunden werden.
+            </p>
             {% endif %}
 
-            <!--Formular für Mehrfachlöschung -->
+            <!-- Formular für Mehrfachlöschung -->
             <form method="POST" action="{% url 'student_bulk_delete' %}">
                 {% csrf_token %}
 
-                <!--Toolbar mit "Alle auswählen" und Lösch-Button -->
-                {% if students %}
+                <!-- Toolbar mit "Alle auswählen" und Lösch-Button (Nur für Dozenten/Admins) -->
+                {% if students and is_dozent_or_admin %}
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #1f1f2b; padding: 10px 15px; border-radius: 8px;">
                     <div>
@@ -164,47 +169,36 @@
                 </div>
                 {% endif %}
 
-                <!--Liste aller Studenten aus der Datenbank -->
+                <!-- Liste aller Studenten aus der Datenbank -->
                 <ul style="list-style-type: none; padding: 0; margin: 0;">
                     {% for student in students %}
                     <li
                         style="padding: 15px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
                         <span style="display: flex; align-items: center; gap: 15px;">
-                            <!--Checkbox für Mehrfachauswahl ergänzt -->
+                            <!-- Checkbox nur für Dozenten/Admins -->
+                            {% if is_dozent_or_admin %}
                             <input type="checkbox" name="selected_students" value="{{ student.id }}"
                                 style="cursor: pointer; transform: scale(1.2);">
+                            {% endif %}
                             <span>
                                 <span>
                                     {{ student.student_id }} - {{ student.first_name }} {{ student.last_name }}</span>
-                                    <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">({{ student.email}})</span>
+                                <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">({{student.email}})</span>
                             </span>
                         </span>
                         <div>
-                            <!--Bearbeiten- und Löschen -->
+                            <!-- Bearbeiten- und Löschen-Buttons nur für Dozenten/Admins -->
+                            {% if is_dozent_or_admin %}
                             <a href="{% url 'student_edit' student.pk %}" class="btn-edit">Bearbeiten</a>
                             <a href="{% url 'student_delete' student.pk %}" class="btn-delete">Löschen</a>
+                            {% endif %}
                         </div>
                     </li>
                     {% empty %}
-                    <!--Liste ist leer -->
+
+                    <!-- Liste ist leer -->
                     <li style="color: #8b8b9e; padding: 10px 0;">Noch keine Studenten vorhanden.</li>
                     {% endfor %}
                 </ul>
             </form>
         </div>
-    </div>
-    <script>
-        // Skript für "Alle markieren"
-        var selectAllCheckbox = document.getElementById('select-all');
-        if (selectAllCheckbox) {
-            selectAllCheckbox.onclick = function () {
-                var checkboxes = document.getElementsByName('selected_students');
-                for (var checkbox of checkboxes) {
-                    checkbox.checked = this.checked;
-                }
-            }
-        }
-    </script>
-</body>
-
-</html>

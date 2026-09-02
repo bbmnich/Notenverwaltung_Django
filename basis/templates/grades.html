@@ -28,15 +28,6 @@
             margin-bottom: 15px;
             font-weight: bold;
         }
-        .system-titel {
-            font-size: 20px;
-            color: #8b8b9e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
 
         .nav-leiste {
             display: flex;
@@ -135,8 +126,10 @@
         <div class="box">
             <h1>Notenübersicht</h1>
 
-            <!-- Button um eine neue Note hinzuzufügen -->
+            <!-- Button um eine neue Note hinzuzufügen (nur für Dozenten/Admins) -->
+            {% if is_dozent_or_admin %}
             <a href="{% url 'grade_create' %}" class="btn-create">+ Note erfassen</a>
+            {% endif %}
 
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <thead>
@@ -144,7 +137,9 @@
                         <th style="text-align: left; padding: 10px;">Student</th>
                         <th style="text-align: left; padding: 10px;">Kurs</th>
                         <th style="text-align: center; padding: 10px;">Note</th>
+                        {% if is_dozent_or_admin %}
                         <th style="text-align: right; padding: 10px;"></th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -155,14 +150,17 @@
                         <td style="padding: 10px; text-align: center; font-weight: bold; color: #ffffff;">
                             {{ grade.score }}
                         </td>
+                        {% if is_dozent_or_admin %}
                         <td style="padding: 10px; text-align: right;">
                             <a href="{% url 'grade_edit' grade.pk %}" class="btn-edit">Bearbeiten</a>
                             <a href="{% url 'grade_delete' grade.pk %}" class="btn-delete">Löschen</a>
                         </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" style="padding: 20px; text-align: center; color: #8b8b9e;">
+                        <td colspan="{% if is_dozent_or_admin %}4{% else %}3{% endif %}"
+                            style="padding: 20px; text-align: center; color: #8b8b9e;">
                             Noch keine Noten eingetragen.
                         </td>
                     </tr>

@@ -129,8 +129,7 @@
 
             <!-- Notenverteilung -->
             <div class="box" style="margin-top: 25px;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px;">Notenverteilung
-                </h3>
+                <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px;">Notenverteilung</h3>
 
                 {% if chart_image %}
                 <div style="text-align: center;">
@@ -141,8 +140,10 @@
                 <p style="color: #8b8b9e;">Noch keine Noten für ein Diagramm vorhanden.</p>
                 {% endif %}
             </div>
+
+            {% if is_dozent_or_admin %}
             <!-- Buttons für den Datei Export und Import -->
-            <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="display: flex; gap: 15px; align-items: center; margin-top: 25px;">
                 <a href="{% url 'export_grades_csv' %}" class="btn-export">⬇️ Daten exportieren</a>
 
                 <!-- Import-Formular -->
@@ -157,6 +158,7 @@
                     </button>
                 </form>
             </div>
+            {% endif %}
 
         </div>
     </div>

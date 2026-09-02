@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Courses - Grade Tracker</title>
     <style>
-        /*SEITEN-DESIGN*/
+        /*DESIGN*/
         body {
             background-color: #0b0b0f;
             color: #ffffff;
@@ -94,6 +94,26 @@
         .btn-delete {
             color: #eb0879;
         }
+
+        .btn-enroll {
+            background-color: #10b981;
+            color: white;
+            padding: 6px 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .btn-enroll:hover {
+            opacity: 0.9;
+        }
+
+        .enrolled-badge {
+            color: #10b981;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -116,8 +136,21 @@
         <div class="box">
             <h1>Kurse</h1>
 
-            <!-- Button, um einen neuen Kurs anzulegen -->
-            <a href="{% url 'course_create' %}" class="btn-create">+ Neuen Kurs erstellen</a>
+            <!-- Nachrichten -erfolgreiche Anmeldung -->
+            {% if messages %}
+                <ul style="list-style: none; padding: 0; margin-bottom: 20px;">
+                    {% for message in messages %}
+                        <li style="padding: 10px; border-radius: 6px; margin-bottom: 5px; background-color: #0b0b0f; color: {% if message.tags == 'error' %}#eb0879{% else %}#10b981{% endif %}; border: 1px solid #2a2a35;">
+                            {{ message }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <!-- Button, um einen neuen Kurs anzulegen -Nur für Dozenten/Admins -->
+            {% if request.user.is_superuser or request.user.groups.all.0.name == 'Dozent' %}
+                <a href="{% url 'course_create' %}" class="btn-create">+ Neuen Kurs erstellen</a>
+            {% endif %}
 
             <ul style="list-style-type: none; padding: 0;">
                 {% for course in courses %}
@@ -125,18 +158,29 @@
                     style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong>{{ course.name }}</strong>
-                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{course.max_score }})</span>
+                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{ course.max_score }})</span>
                     </div>
-                    <div class="course-actions">
-                        <!-- Bearbeiten-Button -->
-                        <a href="{% url 'course_edit' course.pk %}" class="btn-edit">Bearbeiten</a>
-                        <!-- Löschen-Button -->
-                        <a href="{% url 'course_delete' course.pk %}" class="btn-delete">Löschen</a>
+                    <div>
+                        <!-- Für Studenten: Kurs belegen oder bereits angemeldet -->
+                        {% if request.user.groups.all.0.name == 'Student' %}
+                            {% if request.user.student_profile in course.students.all %}
+                                <span class="enrolled-badge">✓ Angemeldet</span>
+                            {% else %}
+                                <a href="{% url 'course_enroll' course.pk %}" class="btn-enroll">Kurs belegen</a>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- Für Dozenten/Admins Bearbeiten und Löschen -->
+                        {% if request.user.is_superuser or request.user.groups.all.0.name == 'Dozent' %}
+                            <span class="course-actions">
+                                <a href="{% url 'course_edit' course.pk %}" class="btn-edit">Bearbeiten</a>
+                                <a href="{% url 'course_delete' course.pk %}" class="btn-delete">Löschen</a>
+                            </span>
+                        {% endif %}
                     </div>
                 </li>
                 {% empty %}
-
-                <!-- Fall, falls noch keine Kurse existieren -->
+                <!-- falls noch keine Kurse existieren -->
                 <li style="color: #8b8b9e;">Noch keine Kurse angelegt.</li>
                 {% endfor %}
             </ul>

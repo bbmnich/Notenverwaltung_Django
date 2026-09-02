@@ -1,8 +1,12 @@
 from django.contrib import admin
 from django.urls import path
 from basis import views  # Importiert Views aus der App
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path("admin/", admin.site.urls),  # Standard-Admin
     path("", views.dashboard_view, name="dashboard"),
     # Students URLs
@@ -10,11 +14,13 @@ urlpatterns = [
     path("students/new/", views.student_create, name="student_create"),
     path("students/<int:pk>/edit/", views.student_edit, name="student_edit"),
     path("students/<int:pk>/delete/", views.student_delete, name="student_delete"),
+    path('students/bulk-delete/', views.student_bulk_delete, name='student_bulk_delete'),
     # Courses URLs
     path("courses/", views.course_list, name="courses"),
     path("courses/new/", views.course_create, name="course_create"),
     path("courses/<int:pk>/edit/", views.course_edit, name="course_edit"),
     path("courses/<int:pk>/delete/", views.course_delete, name="course_delete"),
+    path('course/enroll/<int:pk>/', views.course_enroll, name='course_enroll'),
     # Grades URLs
     path("grades/", views.grades_view, name="grades"),
     path('grades/new/', views.grade_create, name='grade_create'),
@@ -26,5 +32,5 @@ urlpatterns = [
     # CSV Import und Export URLs
     path('export/csv/', views.export_grades_csv, name='export_grades_csv'),
     path('import/csv/', views.import_grades_csv, name='import_grades_csv'),
-    path('students/bulk-delete/', views.student_bulk_delete, name='student_bulk_delete'),
+    
 ]
