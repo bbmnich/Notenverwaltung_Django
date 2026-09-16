@@ -2,6 +2,7 @@ import base64
 import csv
 import io
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -30,56 +31,87 @@ def is_student(user):
 
 # Dashboard-Ansicht mit Kennzahlen
 def dashboard_view(request):
-    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
+
     student_count = Student.objects.count()
     course_count = Course.objects.count()
     grade_count = Grade.objects.count()
+    at_risk_count = Grade.objects.filter(score__lt=50).count()
 
-    raw_distribution = Grade.objects.values("score").annotate(count=Count("id")).order_by("score")
+    # Diagramm 1: Bestanden vs. Nicht Bestanden
+    passed_count = Grade.objects.filter(score__gte=50).count()
+    failed_count = Grade.objects.filter(score__lt=50).count()
 
-    scores = [item["score"] for item in raw_distribution]
-    counts = [item["count"] for item in raw_distribution]
+    # Diagramm 2: Verteilung nach Kursen
+    course_data = Course.objects.annotate(grade_num=Count("grade")).filter(grade_num__gt=0)
+    course_names = [c.name for c in course_data]
+    course_counts = [c.grade_num for c in course_data]
 
     chart_image = None
-    if scores and counts:
-        fig, ax = plt.subplots(figsize=(10, 4.5))
-        fig.patch.set_facecolor("#16161e")
-        ax.set_facecolor("#16161e")
+    if Grade.objects.exists():
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        fig.patch.set_facecolor("#ffffff")
 
-        score_labels = [str(s) for s in scores]
+        # Diagramm 1: Studenten-Status
+        ax1.set_facecolor("#ffffff")
+        pie_labels = ["Bestanden", "Nicht bestanden"]
+        pie_values = [passed_count or 1, failed_count or 0]
+        pie_colors = ["#22c55e", "#ef4444"]  # Grün und Korallenrot
 
-        ax.bar(score_labels, counts, color="#8b5cf6", width=0.6, alpha=0.9)
+        wedges1, _ = ax1.pie(
+            pie_values,
+            colors=pie_colors,
+            startangle=90,
+            wedgeprops={"edgecolor": "#ffffff", "linewidth": 1.5}
+        )
+        ax1.legend(
+            wedges1,
+            pie_labels,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.15),
+            ncol=2,
+            frameon=False,
+            fontsize=9
+        )
 
-        ax.set_xlabel("SCORE", color="#8b8b9e", fontsize=12, labelpad=10)
-        ax.set_ylabel("ANZAHL", color="#8b8b9e", fontsize=12, labelpad=10)
-        ax.tick_params(colors="#ffffff", labelsize=10)
+        # Diagramm 2:Kurse
+        ax2.set_facecolor("#ffffff")
+        palette = ["#f87171", "#34d399", "#fbbf24", "#38bdf8", "#60a5fa", "#c084fc", "#e879f9", "#000000", "#2563eb", "#dc2626"]
+        
+        donut_vals = course_counts if course_counts else [1]
+        donut_lbls = course_names if course_names else ["Keine Daten"]
+        used_colors = palette[:len(donut_vals)]
 
-        plt.xticks(rotation=0, color="#ffffff", fontsize=9)
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-
-        ax.spines["bottom"].set_color("#2a2a35")
-        ax.spines["left"].set_color("#2a2a35")
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-
-        ax.yaxis.grid(True, linestyle="--", alpha=0.2, color="#ffffff")
-        ax.set_axisbelow(True)
+        wedges2, _ = ax2.pie(
+            donut_vals,
+            colors=used_colors,
+            startangle=45,
+            wedgeprops={"edgecolor": "#ffffff", "linewidth": 1.5, "width": 0.45}  # Donut-Loch
+        )
+        ax2.legend(
+            wedges2,
+            donut_lbls,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.15),
+            ncol=3,
+            frameon=False,
+            fontsize=8
+        )
 
         plt.tight_layout()
 
         buffer = io.BytesIO()
-        plt.savefig(buffer, format="png", facecolor=fig.get_facecolor(), edgecolor="none", dpi=100)
+        plt.savefig(buffer, format="png", facecolor=fig.get_facecolor(), edgecolor="none", dpi=110)
         buffer.seek(0)
-        image_png = buffer.getvalue()
+        chart_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
         buffer.close()
         plt.close(fig)
-
-        chart_image = base64.b64encode(image_png).decode("utf-8")
 
     context = {
         "student_count": student_count,
         "course_count": course_count,
         "grade_count": grade_count,
+        "at_risk_count": at_risk_count,
         "chart_image": chart_image,
         "is_dozent_or_admin": is_dozent_or_admin,
     }
@@ -92,7 +124,36 @@ def student_create(request):
     if request.method == "POST":
         form = StudentForm(request.POST)
         if form.is_valid():
-            form.save()
+            student = form.save(commit=False)
+
+            # 1. Automatische ID generieren
+            if not student.student_id:
+                last_student = (
+                    Student.objects.exclude(student_id__isnull=True).exclude(student_id="").order_by("-id").first()
+                )
+                if last_student and last_student.student_id and last_student.student_id.isdigit():
+                    next_id = int(last_student.student_id) + 1
+                else:
+                    next_id = Student.objects.count() + 1
+                student.student_id = f"{next_id:04d}"
+
+            # 2. Prüfen/Erstellen  Django-Users
+            if hasattr(student, "user") and not student.user:
+                # generierte student_id als Benutzernamen
+                username = student.email if student.email else student.student_id
+
+                base_username = username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}_{counter}"
+                    counter += 1
+
+                user = User.objects.create_user(username=username, email=student.email)
+                student.user = user
+
+            student.save()
+            form.save_m2m()
+            messages.success(request, "Student erfolgreich erstellt.")
             return redirect("students")
     else:
         form = StudentForm()
@@ -125,7 +186,7 @@ def student_delete(request, pk):
 
 # Liste aller Studenten anzeigen (Suche nach ID oder Nachname)
 def students_view(request):
-    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
     query = request.GET.get("q", "").strip()
 
     if query:
@@ -143,7 +204,7 @@ def students_view(request):
 
 # Liste aller Kurse anzeigen
 def course_list(request):
-    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
     courses = Course.objects.all()
     return render(request, "courses.html", {"courses": courses, "is_dozent_or_admin": is_dozent_or_admin})
 
@@ -187,16 +248,27 @@ def course_delete(request, pk):
 
 # Liste aller Noten anzeigen (für Dozenten alle, für Studenten nur die eigenen)
 def grades_view(request):
-    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
-    
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
+
     if is_dozent_or_admin:
         grades = Grade.objects.all().order_by("student__last_name")
-    elif hasattr(request.user, "student_profile") and request.user.student_profile:
-        grades = Grade.objects.filter(student=request.user.student_profile).order_by("course__name")
     else:
-        grades = Grade.objects.none()
-        
+        # Sicherer Abruf des Studenten-Profils
+        student = getattr(request.user, "student_profile", None)
+        if not student:
+            student = Student.objects.filter(student_id=request.user.username).first()
+            if student and not student.user:
+                student.user = request.user
+                student.save(update_fields=["user"])
+
+        # Noten nur für diesen Studenten filtern
+        if student:
+            grades = Grade.objects.filter(student=student).order_by("course__name")
+        else:
+            grades = Grade.objects.none()
+
     return render(request, "grades.html", {"grades": grades, "is_dozent_or_admin": is_dozent_or_admin})
+
 
 # Einzelne Note erfassen
 @user_passes_test(is_dozent)
@@ -237,7 +309,7 @@ def grade_delete(request, pk):
 
 # Auswertungen und Statistiken für Studenten und Kurse
 def reports_view(request):
-    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name='Dozent').exists()
+    is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
     total_grades = Grade.objects.count()
     overall_avg = Grade.objects.aggregate(Avg("score"))["score__avg"] or 0
     highest_grade = Grade.objects.aggregate(Max("score"))["score__max"]
@@ -324,11 +396,19 @@ def export_grades_csv(request):
     response.write("\ufeff".encode("utf8"))
 
     writer = csv.writer(response, delimiter=";")
-    writer.writerow(["Vorname", "Nachname", "Kurs", "Note"])
-
-    grades = Grade.objects.all().select_related("student", "course")
-    for grade in grades:
-        writer.writerow([grade.student.first_name, grade.student.last_name, grade.course.name, grade.score])
+    writer.writerow(["Student-ID", "Vorname", "Nachname", "E-Mail", "Kurs", "Note"])
+    grades = Grade.objects.all().order_by("student__student_id")
+    for g in grades:
+        writer.writerow(
+            [
+                g.student.student_id,
+                g.student.first_name,
+                g.student.last_name,
+                g.student.email or "",
+                g.course.name,
+                g.score,
+            ]
+        )
 
     return response
 
@@ -343,27 +423,47 @@ def import_grades_csv(request):
             messages.error(request, "Bitte lade eine gültige .csv-Datei hoch.")
             return redirect("dashboard")
 
-        decoded_file = csv_file.read().decode("utf-8")
+        # entfernt Excel-BOM-Zeichen
+        decoded_file = csv_file.read().decode("utf-8-sig")
         io_string = io.StringIO(decoded_file)
         reader = csv.reader(io_string, delimiter=";")
 
         next(reader)
 
         for row in reader:
-            if len(row) >= 5:
-                first_name, last_name, email, course_name, score_raw = row[0], row[1], row[2], row[3], row[4]
-
-                student, created = Student.objects.get_or_create(
-                    first_name=first_name, last_name=last_name, defaults={"email": email}
+            if len(row) >= 6:
+                student_id, first_name, last_name, email, course_name, score_raw = (
+                    row[0].strip(),
+                    row[1].strip(),
+                    row[2].strip(),
+                    row[3].strip(),
+                    row[4].strip(),
+                    row[5].strip(),
                 )
 
-                if not created and email and not student.email:
-                    student.email = email
-                    student.save()
+                # Suche/Erstellung über die student_id
+                student, created = Student.objects.get_or_create(
+                    student_id=student_id, defaults={"first_name": first_name, "last_name": last_name, "email": email}
+                )
+
+                # Student da , dann aktualisieren
+                updated = False
+                if not created:
+                    if first_name and student.first_name != first_name:
+                        student.first_name = first_name
+                        updated = True
+                    if last_name and student.last_name != last_name:
+                        student.last_name = last_name
+                        updated = True
+                    if email and not student.email:
+                        student.email = email
+                        updated = True
+                    if updated:
+                        student.save()
 
                 course, _ = Course.objects.get_or_create(name=course_name, defaults={"max_score": 100})
 
-                score = int(float(score_raw))
+                score = int(float(score_raw.replace(",", ".")))
                 Grade.objects.create(student=student, course=course, score=score)
 
         messages.success(request, "Alle Daten wurden erfolgreich importiert!")
@@ -427,8 +527,16 @@ def admin_bereich_view(request):
 def course_enroll(request, pk):
     course = get_object_or_404(Course, pk=pk)
 
-    if hasattr(request.user, "student_profile") and request.user.student_profile:
-        student = request.user.student_profile
+    # 1. Studenten über das Profil oder per Username (student_id) zu finden
+    student = getattr(request.user, "student_profile", None)
+    if not student:
+        student = Student.objects.filter(student_id=request.user.username).first()
+        # Falls gefunden, verknüpfen
+        if student and not student.user:
+            student.user = request.user
+            student.save(update_fields=["user"])
+
+    if student:
         if course in student.enrolled_courses.all():
             messages.warning(request, f"Du bist bereits für den Kurs '{course.name}' angemeldet.")
         else:

@@ -14,21 +14,15 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_profile")
 
     def save(self, *args, **kwargs):
-        # Wenn der Student noch keinen verknüpften User hat, erstellen wir einen
-        if not self.user and self.student_id:
-            user, created = User.objects.get_or_create(
-                username=self.student_id,
-                defaults={"first_name": self.first_name, "last_name": self.last_name, "email": self.email or ""},
+        if not self.student_id:
+            last_student = (
+                Student.objects.exclude(student_id__isnull=True).exclude(student_id="").order_by("-id").first()
             )
-            if created:
-                user.set_password("student")  # Standardpasswort
-                user.save()
-                # Der Gruppe 'Student' zuweisen
-                student_group, _ = Group.objects.get_or_create(name="Student")
-                user.groups.add(student_group)
-
-            self.user = user
-
+            if last_student and last_student.student_id and last_student.student_id.isdigit():
+                next_id = int(last_student.student_id) + 1
+            else:
+                next_id = Student.objects.count() + 1
+            self.student_id = f"{next_id:04d}"
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -40,7 +34,7 @@ class Course(models.Model):
     name = models.CharField(max_length=100)
     max_score = models.IntegerField()
 
-    # Kurseinschreibung für Studenten
+    # Kurseinschreibung/Studenten
     students = models.ManyToManyField(Student, blank=True, related_name="enrolled_courses")
 
     def __str__(self):

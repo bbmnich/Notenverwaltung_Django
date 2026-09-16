@@ -156,7 +156,7 @@
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #1f1f2b; padding: 10px 15px; border-radius: 8px;">
                     <div>
-                        <input type="checkbox" id="select-all" style="cursor: pointer; transform: scale(1.2);">
+                        <input type="checkbox" id="select-all" style="cursor: pointer; transform: scale(1.2);" onchange="toggleAll(this)">
                         <label for="select-all"
                             style="color: #8b8b9e; font-size: 14px; margin-left: 8px; cursor: pointer;">Alle
                             markieren</label>
@@ -178,7 +178,7 @@
                             <!-- Checkbox nur für Dozenten/Admins -->
                             {% if is_dozent_or_admin %}
                             <input type="checkbox" name="selected_students" value="{{ student.id }}"
-                                style="cursor: pointer; transform: scale(1.2);">
+                                style="cursor: pointer; transform: scale(1.2);" class="student-checkbox">
                             {% endif %}
                             <span>
                                 <span>
@@ -202,3 +202,16 @@
                 </ul>
             </form>
         </div>
+    </div>
+     <!--Alle markieren"-Funktion -->
+    <script>
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+    </script>
+</body>
+
+</html>
