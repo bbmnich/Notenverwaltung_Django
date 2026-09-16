@@ -38,55 +38,62 @@ def dashboard_view(request):
     grade_count = Grade.objects.count()
     at_risk_count = Grade.objects.filter(score__lt=50).count()
 
-    # Diagramm 1: Bestanden vs. Nicht Bestanden
+    # Daten Diagramm 1: Bestanden vs. Nicht Bestanden
     passed_count = Grade.objects.filter(score__gte=50).count()
     failed_count = Grade.objects.filter(score__lt=50).count()
 
-    # Diagramm 2: Verteilung nach Kursen
+    # Daten Diagramm 2: Verteilung nach Kursen
     course_data = Course.objects.annotate(grade_num=Count("grade")).filter(grade_num__gt=0)
     course_names = [c.name for c in course_data]
     course_counts = [c.grade_num for c in course_data]
 
-    chart_image = None
+    chart_pie = None
+    chart_donut = None
+
     if Grade.objects.exists():
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-        fig.patch.set_facecolor("#ffffff")
-
-        # Diagramm 1: Studenten-Status
+        # 1. Kreisdiagramm
+        fig1, ax1 = plt.subplots(figsize=(5.5, 4.2))
+        fig1.patch.set_facecolor("#ffffff")
         ax1.set_facecolor("#ffffff")
-        pie_labels = ["Bestanden", "Nicht bestanden"]
-        pie_values = [passed_count or 1, failed_count or 0]
-        pie_colors = ["#22c55e", "#ef4444"]  # Grün und Korallenrot
 
+        pie_values = [passed_count or 1, failed_count or 0]
         wedges1, _ = ax1.pie(
             pie_values,
-            colors=pie_colors,
+            colors=["#22c55e", "#ef4444"],
             startangle=90,
             wedgeprops={"edgecolor": "#ffffff", "linewidth": 1.5}
         )
         ax1.legend(
             wedges1,
-            pie_labels,
+            ["Bestanden", "Nicht bestanden"],
             loc="upper center",
             bbox_to_anchor=(0.5, 1.15),
             ncol=2,
             frameon=False,
             fontsize=9
         )
+        plt.tight_layout()
+        buf1 = io.BytesIO()
+        plt.savefig(buf1, format="png", facecolor="#ffffff", edgecolor="none", dpi=110)
+        buf1.seek(0)
+        chart_pie = base64.b64encode(buf1.getvalue()).decode("utf-8")
+        buf1.close()
+        plt.close(fig1)
 
-        # Diagramm 2:Kurse
+        # 2. Donut-Diagramm
+        fig2, ax2 = plt.subplots(figsize=(5.5, 4.2))
+        fig2.patch.set_facecolor("#ffffff")
         ax2.set_facecolor("#ffffff")
-        palette = ["#f87171", "#34d399", "#fbbf24", "#38bdf8", "#60a5fa", "#c084fc", "#e879f9", "#000000", "#2563eb", "#dc2626"]
-        
+
+        palette = ["#f87171", "#34d399", "#fbbf24", "#38bdf8", "#60a5fa", "#c084fc", "#e879f9", "#111827"]
         donut_vals = course_counts if course_counts else [1]
         donut_lbls = course_names if course_names else ["Keine Daten"]
-        used_colors = palette[:len(donut_vals)]
 
         wedges2, _ = ax2.pie(
             donut_vals,
-            colors=used_colors,
+            colors=palette[:len(donut_vals)],
             startangle=45,
-            wedgeprops={"edgecolor": "#ffffff", "linewidth": 1.5, "width": 0.45}  # Donut-Loch
+            wedgeprops={"edgecolor": "#ffffff", "linewidth": 1.5, "width": 0.45}
         )
         ax2.legend(
             wedges2,
@@ -97,22 +104,21 @@ def dashboard_view(request):
             frameon=False,
             fontsize=8
         )
-
         plt.tight_layout()
-
-        buffer = io.BytesIO()
-        plt.savefig(buffer, format="png", facecolor=fig.get_facecolor(), edgecolor="none", dpi=110)
-        buffer.seek(0)
-        chart_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        buffer.close()
-        plt.close(fig)
+        buf2 = io.BytesIO()
+        plt.savefig(buf2, format="png", facecolor="#ffffff", edgecolor="none", dpi=110)
+        buf2.seek(0)
+        chart_donut = base64.b64encode(buf2.getvalue()).decode("utf-8")
+        buf2.close()
+        plt.close(fig2)
 
     context = {
         "student_count": student_count,
         "course_count": course_count,
         "grade_count": grade_count,
         "at_risk_count": at_risk_count,
-        "chart_image": chart_image,
+        "chart_pie": chart_pie,
+        "chart_donut": chart_donut,
         "is_dozent_or_admin": is_dozent_or_admin,
     }
     return render(request, "dashboard.html", context)
