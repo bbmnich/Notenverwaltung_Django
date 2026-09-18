@@ -124,7 +124,7 @@ def dashboard_view(request):
     return render(request, "dashboard.html", context)
 
 
-# Neuen Studenten anlegen -für Dozenten ,Super-Admins
+# Neuen Studenten anlegen -für Dozenten,Super-Admins
 @user_passes_test(is_dozent)
 def student_create(request):
     if request.method == "POST":
@@ -166,7 +166,7 @@ def student_create(request):
     return render(request, "student_form.html", {"form": form})
 
 
-# Studenten bearbeiten -für Dozenten ,Super-Admins
+# Studenten bearbeiten -für Dozenten,Super-Admins
 @user_passes_test(is_dozent)
 def student_edit(request, pk):
     student = get_object_or_404(Student, pk=pk)
@@ -190,31 +190,100 @@ def student_delete(request, pk):
     return render(request, "student_delete.html", {"student": student})
 
 
-# Liste aller Studenten anzeigen (Suche nach ID oder Nachname)
+# Liste aller Studenten anzeigen mit Kursen und Noten
 def students_view(request):
     is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
     query = request.GET.get("q", "").strip()
 
+    students = Student.objects.prefetch_related("grade_set__course")
+
     if query:
-        students = Student.objects.filter(Q(student_id__icontains=query) | Q(last_name__icontains=query))
-    else:
-        students = Student.objects.all()
+        students = students.filter(
+            Q(student_id__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(first_name__icontains=query)
+        )
+
+    student_list = []
+    for s in students:
+        grades = list(s.grade_set.all())
+
+        # Kurse und Notenanzahl pro Kurs ermitteln
+        course_grade_counts = {}
+        for g in grades:
+            c_name = g.course.name
+            course_grade_counts[c_name] = course_grade_counts.get(c_name, 0) + 1
+
+        # Falls der Student in Kursen ohne vergebene Note eingeschrieben ist
+        if hasattr(s, "enrolled_courses"):
+            for ec in s.enrolled_courses.all():
+                if ec.name not in course_grade_counts:
+                    course_grade_counts[ec.name] = 0
+
+        course_info = [
+            {"course_name": c_name, "grade_count": count}
+            for c_name, count in course_grade_counts.items()
+        ]
+
+        student_list.append({
+            "obj": s,
+            "courses": course_info,
+            "total_grades": len(grades),
+        })
 
     context = {
-        "students": students,
+        "student_list": student_list,
         "query": query,
         "is_dozent_or_admin": is_dozent_or_admin,
     }
     return render(request, "students.html", context)
 
-
-# Liste aller Kurse anzeigen
+# Liste aller Kurse
 def course_list(request):
     is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
-    courses = Course.objects.all()
-    return render(request, "courses.html", {"courses": courses, "is_dozent_or_admin": is_dozent_or_admin})
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "all")
 
+    courses = Course.objects.prefetch_related("grade_set__student").all()
 
+    if query:
+        courses = courses.filter(name__icontains=query)
+
+    course_data = []
+    for c in courses:
+        grades = list(c.grade_set.all())
+        total_grades = len(grades)
+
+        if status_filter == "with_grades" and total_grades == 0:
+            continue
+        if status_filter == "without_grades" and total_grades > 0:
+            continue
+
+        avg_score = round(sum(g.score for g in grades) / total_grades, 1) if total_grades > 0 else 0
+
+        students_in_course = [
+            {
+                "name": f"{g.student.first_name} {g.student.last_name}",
+                "student_id": g.student.student_id,
+                "score": g.score,
+                "passed": g.score >= 50
+            }
+            for g in grades
+        ]
+
+        course_data.append({
+            "obj": c,
+            "total_grades": total_grades,
+            "avg_score": avg_score,
+            "students": students_in_course
+        })
+
+    return render(request, "courses.html", {
+        "course_data": course_data,
+        "is_dozent_or_admin": is_dozent_or_admin,
+        "query": query,
+        "status_filter": status_filter
+    })
 # Neuen Kurs erstellen
 @user_passes_test(is_dozent)
 def course_create(request):
@@ -228,7 +297,9 @@ def course_create(request):
     return render(request, "course_form.html", {"form": form})
 
 
-# Bestehenden Kurs bearbeiten
+
+
+# Kurs bearbeiten
 @user_passes_test(is_dozent)
 def course_edit(request, pk):
     course = get_object_or_404(Course, pk=pk)
@@ -252,14 +323,23 @@ def course_delete(request, pk):
     return render(request, "course_delete.html", {"course": course})
 
 
-# Liste aller Noten anzeigen (für Dozenten alle, für Studenten nur die eigenen)
+# Liste aller Noten anzeigen (für Dozenten alle, für Studenten nur eigene)
 def grades_view(request):
     is_dozent_or_admin = request.user.is_superuser or request.user.groups.filter(name="Dozent").exists()
+    query = request.GET.get("q", "").strip()
+    course_filter = request.GET.get("course", "")
 
     if is_dozent_or_admin:
-        grades = Grade.objects.all().order_by("student__last_name")
+        grades = Grade.objects.select_related("student", "course").all().order_by("-id")
+        if query:
+            grades = grades.filter(
+                Q(student__first_name__icontains=query) |
+                Q(student__last_name__icontains=query) |
+                Q(student__student_id__icontains=query)
+            )
+        if course_filter:
+            grades = grades.filter(course_id=course_filter)
     else:
-        # Sicherer Abruf des Studenten-Profils
         student = getattr(request.user, "student_profile", None)
         if not student:
             student = Student.objects.filter(student_id=request.user.username).first()
@@ -267,16 +347,23 @@ def grades_view(request):
                 student.user = request.user
                 student.save(update_fields=["user"])
 
-        # Noten nur für diesen Studenten filtern
         if student:
-            grades = Grade.objects.filter(student=student).order_by("course__name")
+            grades = Grade.objects.filter(student=student).select_related("course").order_by("course__name")
         else:
             grades = Grade.objects.none()
 
-    return render(request, "grades.html", {"grades": grades, "is_dozent_or_admin": is_dozent_or_admin})
+    courses = Course.objects.all()
+
+    return render(request, "grades.html", {
+        "grades": grades,
+        "courses": courses,
+        "query": query,
+        "course_filter": course_filter,
+        "is_dozent_or_admin": is_dozent_or_admin
+    })
 
 
-# Einzelne Note erfassen
+# Note erfassen
 @user_passes_test(is_dozent)
 def grade_create(request):
     if request.method == "POST":

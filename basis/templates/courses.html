@@ -3,9 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Courses - Grade Tracker</title>
+    <title>Kurse - Notenverwaltung</title>
     <style>
-        /*DESIGN*/
         body {
             background-color: #0b0b0f;
             color: #ffffff;
@@ -19,7 +18,8 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        /* System-Haupttitel */
+
+        /* Haupttitel */
         .system-titel {
             font-size: 20px;
             color: #8b8b9e;
@@ -29,7 +29,7 @@
             font-weight: bold;
         }
 
-        /* NAVIGATIONSSLEISTE */
+        /* Navigation */
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -42,13 +42,13 @@
             color: #8b8b9e;
             text-decoration: none;
             font-weight: bold;
+            outline: none;
         }
 
         .nav-leiste a.aktiv {
             color: #ffffff;
         }
 
-        /* HAUPTINHALT */
         .box {
             background-color: #16161e;
             border: 1px solid #2a2a35;
@@ -59,60 +59,240 @@
         h1 {
             font-size: 24px;
             margin-top: 0;
-        }
-
-        p {
-            font-size: 16px;
-        }
-
-        /* BUTTONS UND AKTIONEN */
-        .btn-create {
-            display: inline-block;
-            background-color: #eb0879;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
             margin-bottom: 20px;
         }
 
-        .btn-create:hover {
-            opacity: 0.9;
-        }
-
-        .course-actions a {
-            margin-left: 15px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .btn-edit {
-            color: #3b82f6;
-        }
-
-        .btn-delete {
-            color: #eb0879;
-        }
-
-        .btn-enroll {
-            background-color: #10b981;
-            color: white;
-            padding: 6px 14px;
+    
+        .btn-primary {
+            background-color: #2563eb;
+            color: #ffffff;
+            padding: 9px 18px;
             text-decoration: none;
             border-radius: 6px;
+            font-weight: 600;
             font-size: 14px;
-            font-weight: bold;
+            border: 1px solid #3b82f6;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: background-color 0.2s;
         }
 
-        .btn-enroll:hover {
-            opacity: 0.9;
+        .btn-primary:hover {
+            background-color: #1d4ed8;
         }
 
-        .enrolled-badge {
-            color: #10b981;
+        /* Suchleiste */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-pill {
+            background-color: #121218;
+            color: #94a3b8;
+            border: 1px solid #2a2a35;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .filter-pill:hover {
+            color: #ffffff;
+            border-color: #3b3b4f;
+        }
+
+        .filter-pill.active {
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            max-width: 450px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 14px;
+            background-color: #0b0b0f;
+            border: 1px solid #2a2a35;
+            border-radius: 6px;
+            color: #ffffff;
             font-size: 14px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #1f1f2b;
+            color: #d1d5db;
+            border: 1px solid #2a2a35;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2a2a3a;
+            color: #ffffff;
+        }
+
+        /* Karten Kurs */
+        .course-item {
+            background-color: #121218;
+            border: 1px solid #2a2a35;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .course-item:hover {
+            border-color: #3b3b4f;
+        }
+
+        .course-row {
+            padding: 13px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .course-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .course-name {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 15px;
+        }
+
+        .course-points {
+            color: #71717a;
+            font-size: 13px;
+        }
+
+        /* Info */
+        .badge-info {
+            background-color: #1c1c26;
+            color: #94a3b8;
+            border: 1px solid #2e2e3f;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: auto;
+            margin-right: 20px;
+        }
+
+        .btn-action-edit {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 12px;
+        }
+
+        .btn-action-edit:hover {
+            text-decoration: underline;
+        }
+
+        .btn-action-delete {
+            color: #f87171;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 12px;
+        }
+
+        .btn-action-delete:hover {
+            text-decoration: underline;
+        }
+
+        /* Teilnehmerbereich */
+        .course-details {
+            display: none;
+            background-color: #0d0d12;
+            border-top: 1px solid #232330;
+            padding: 14px 20px 14px 25px;
+        }
+
+        .course-details.open {
+            display: block;
+        }
+
+        .details-title {
+            font-size: 11px;
             font-weight: bold;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .student-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .student-chip {
+            background-color: #161620;
+            border: 1px solid #282838;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #e2e8f0;
+        }
+
+        .score-pill-pass {
+            background-color: #0f766e;
+            color: #ccfbf1;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 8px;
+        }
+
+        .score-pill-fail {
+            background-color: #451a1a;
+            color: #fca5a5;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -120,72 +300,108 @@
 <body>
     <div class="container">
 
-        <!-- System-Titel -->
+        <!-- Titel -->
         <div class="system-titel">Notenverwaltung</div>
 
-        <!-- Hauptmenü -->
+        <!-- Navigation -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'students' %}">Students</a>
-            <a href="{% url 'courses' %}" class="aktiv">Courses</a>
-            <a href="{% url 'grades' %}">Grades</a>
-            <a href="{% url 'reports' %}">Reports</a>
-            <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
+            <a href="{% url 'students' %}">Studenten</a>
+            <a href="{% url 'courses' %}" class="aktiv">Kurse</a>
+            <a href="{% url 'grades' %}">Noten</a>
+            <a href="{% url 'reports' %}">Berichte</a>
+            <a href="{% url 'admin_bereich' %}">Admin</a>
         </div>
-        <!-- Bereich für Kurse -->
+
         <div class="box">
             <h1>Kurse</h1>
 
-            <!-- Nachrichten -erfolgreiche Anmeldung -->
-            {% if messages %}
-                <ul style="list-style: none; padding: 0; margin-bottom: 20px;">
-                    {% for message in messages %}
-                        <li style="padding: 10px; border-radius: 6px; margin-bottom: 5px; background-color: #0b0b0f; color: {% if message.tags == 'error' %}#eb0879{% else %}#10b981{% endif %}; border: 1px solid #2a2a35;">
-                            {{ message }}
-                        </li>
-                    {% endfor %}
-                </ul>
+            {% if is_dozent_or_admin %}
+            <div style="margin-bottom: 22px;">
+                <a href="{% url 'course_create' %}" class="btn-primary">+ Neuen Kurs erstellen</a>
+            </div>
             {% endif %}
 
-            <!-- Button, um einen neuen Kurs anzulegen -Nur für Dozenten/Admins -->
-            {% if request.user.is_superuser or request.user.groups.all.0.name == 'Dozent' %}
-                <a href="{% url 'course_create' %}" class="btn-create">+ Neuen Kurs erstellen</a>
-            {% endif %}
+            <!-- Such-Filterleiste -->
+            <div class="filter-bar">
+                <form method="get" action="{% url 'courses' %}" class="search-form">
+                    <input type="hidden" name="status" value="{{ status_filter|default:'all' }}">
+                    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Kurs suchen..." class="search-input">
+                    <button type="submit" class="btn-secondary">Suchen</button>
+                    {% if query %}
+                    <a href="{% url 'courses' %}?status={{ status_filter|default:'all' }}" class="btn-secondary">✕</a>
+                    {% endif %}
+                </form>
 
-            <ul style="list-style-type: none; padding: 0;">
-                {% for course in courses %}
-                <li
-                    style="padding: 12px 0; border-bottom: 1px solid #2a2a35; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>{{ course.name }}</strong>
-                        <span style="color: #8b8b9e; font-size: 14px; margin-left: 10px;">(Max. Punkte: {{ course.max_score }})</span>
+                <div class="filter-pills">
+                    <a href="{% url 'courses' %}?q={{ query|default:'' }}&status=all" class="filter-pill {% if not status_filter or status_filter == 'all' %}active{% endif %}">Alle</a>
+                    <a href="{% url 'courses' %}?q={{ query|default:'' }}&status=with_grades" class="filter-pill {% if status_filter == 'with_grades' %}active{% endif %}">Mit Noten</a>
+                    <a href="{% url 'courses' %}?q={{ query|default:'' }}&status=without_grades" class="filter-pill {% if status_filter == 'without_grades' %}active{% endif %}">Ohne Noten</a>
+                </div>
+            </div>
+
+            <!-- Kursliste -->
+            <div style="display: flex; flex-direction: column;">
+                {% for item in course_data %}
+                <div class="course-item">
+                    <div class="course-row" onclick="toggleDetails('details-course-{{ item.obj.id }}')">
+                        
+                        <div class="course-left">
+                            <span class="course-name">{{ item.obj.name }}</span>
+                            <span class="course-points">(Max. Punkte: {{ item.obj.max_score }})</span>
+                        </div>
+
+                        <!-- Notenanzahl & Punkteschnitt -->
+                        <span class="badge-info">
+                            {{ item.total_grades }} Noten | Ø {{ item.avg_score }} Pkt. ▾
+                        </span>
+
+                        {% if is_dozent_or_admin %}
+                        <div onclick="event.stopPropagation();">
+                            <a href="{% url 'course_edit' item.obj.pk %}" class="btn-action-edit">Bearbeiten</a>
+                            <a href="{% url 'course_delete' item.obj.pk %}" class="btn-action-delete" onclick="return confirm('Kurs wirklich löschen?')">Löschen</a>
+                        </div>
+                        {% endif %}
                     </div>
-                    <div>
-                        <!-- Für Studenten: Kurs belegen oder bereits angemeldet -->
-                        {% if request.user.groups.all.0.name == 'Student' %}
-                            {% if request.user.student_profile in course.students.all %}
-                                <span class="enrolled-badge">✓ Angemeldet</span>
+
+                    <!-- Studenten -->
+                    <div id="details-course-{{ item.obj.id }}" class="course-details">
+                        <div class="details-title">Eingetragene Studenten & Noten</div>
+                        <div class="student-chips">
+                            {% if item.students %}
+                                {% for s in item.students %}
+                                    <div class="student-chip">
+                                        <span style="color: #94a3b8; font-family: monospace;">{{ s.student_id }}</span>
+                                        <span>{{ s.name }}</span>
+                                        {% if s.passed %}
+                                            <span class="score-pill-pass">{{ s.score }} Pkt.</span>
+                                        {% else %}
+                                            <span class="score-pill-fail">{{ s.score }} Pkt.</span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
                             {% else %}
-                                <a href="{% url 'course_enroll' course.pk %}" class="btn-enroll">Kurs belegen</a>
+                                <span style="color: #71717a; font-size: 13px;">Für diesen Kurs sind noch keine Noten eingetragen.</span>
                             {% endif %}
-                        {% endif %}
-
-                        <!-- Für Dozenten/Admins Bearbeiten und Löschen -->
-                        {% if request.user.is_superuser or request.user.groups.all.0.name == 'Dozent' %}
-                            <span class="course-actions">
-                                <a href="{% url 'course_edit' course.pk %}" class="btn-edit">Bearbeiten</a>
-                                <a href="{% url 'course_delete' course.pk %}" class="btn-delete">Löschen</a>
-                            </span>
-                        {% endif %}
+                        </div>
                     </div>
-                </li>
+                </div>
                 {% empty %}
-                <!-- falls noch keine Kurse existieren -->
-                <li style="color: #8b8b9e;">Noch keine Kurse angelegt.</li>
+                <p style="color: #71717a; text-align: center; padding: 25px;">Keine Kurse vorhanden.</p>
                 {% endfor %}
-            </ul>
+            </div>
+
         </div>
     </div>
+
+    <script>
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('open');
+            }
+        }
+    </script>
 </body>
 
 </html>

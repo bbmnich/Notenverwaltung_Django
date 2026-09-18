@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Grades - Grade Tracker</title>
+    <title>Noten - Notenverwaltung</title>
     <style>
         body {
             background-color: #0b0b0f;
@@ -19,7 +19,7 @@
             margin: 0 auto;
         }
 
-        /* System-Haupttitel */
+        /* Titel */
         .system-titel {
             font-size: 20px;
             color: #8b8b9e;
@@ -29,6 +29,7 @@
             font-weight: bold;
         }
 
+        /* Navigation */
         .nav-leiste {
             display: flex;
             gap: 20px;
@@ -41,6 +42,7 @@
             color: #8b8b9e;
             text-decoration: none;
             font-weight: bold;
+            outline: none;
         }
 
         .nav-leiste a.aktiv {
@@ -60,48 +62,184 @@
             margin-bottom: 20px;
         }
 
-        p {
-            font-size: 16px;
-        }
-
-        /* Button zum Erstellen einer neuen Note */
-        .btn-create {
-            background-color: #eb0879;
-            color: white;
-            padding: 10px 20px;
+        /* Button */
+        .btn-primary {
+            background-color: #2563eb;
+            color: #ffffff;
+            padding: 9px 18px;
             text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .btn-create:hover {
-            opacity: 0.9;
-        }
-
-        /* Bearbeiten- und Löschen-Links*/
-        .btn-edit {
-            color: #3b82f6;
-            text-decoration: none;
-            margin-right: 15px;
+            border-radius: 6px;
+            font-weight: 600;
             font-size: 14px;
-            font-weight: bold;
+            border: 1px solid #3b82f6;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: background-color 0.2s;
         }
 
-        .btn-edit:hover {
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Filter- & Suchleiste */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 240px;
+            padding: 8px 14px;
+            background-color: #0b0b0f;
+            border: 1px solid #2a2a35;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-input:focus, .filter-select:focus {
+            border-color: #2563eb;
+        }
+
+        .filter-select {
+            padding: 8px 14px;
+            background-color: #0b0b0f;
+            border: 1px solid #2a2a35;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background-color: #1f1f2b;
+            color: #d1d5db;
+            border: 1px solid #2a2a35;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2a2a3a;
+            color: #ffffff;
+        }
+
+        /* Noten-Tabelle */
+        .grade-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .grade-table th {
+            text-align: left;
+            padding: 10px 18px;
+            color: #71717a;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .grade-row {
+            background-color: #121218;
+            transition: border-color 0.2s;
+        }
+
+        .grade-row td {
+            padding: 12px 18px;
+            border-top: 1px solid #2a2a35;
+            border-bottom: 1px solid #2a2a35;
+        }
+
+        .grade-row td:first-child {
+            border-left: 1px solid #2a2a35;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .grade-row td:last-child {
+            border-right: 1px solid #2a2a35;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .grade-row:hover td {
+            border-color: #3b3b4f;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .student-id {
+            color: #71717a;
+            font-size: 12px;
+            font-family: monospace;
+            margin-left: 6px;
+        }
+
+        .course-badge {
+            background-color: #1a1a24;
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #2e2e3f;
+        }
+
+        .score-pill-pass {
+            background-color: #0f766e;
+            color: #ccfbf1;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .score-pill-fail {
+            background-color: #451a1a;
+            color: #fca5a5;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .btn-action-edit {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 12px;
+        }
+
+        .btn-action-edit:hover {
             text-decoration: underline;
         }
 
-        .btn-delete {
-            color: #eb0879;
+        .btn-action-delete {
+            color: #f87171;
             text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 12px;
         }
 
-        .btn-delete:hover {
+        .btn-action-delete:hover {
             text-decoration: underline;
         }
     </style>
@@ -110,63 +248,93 @@
 <body>
     <div class="container">
 
-        <!-- System-Titel -->
+        <!-- Titel -->
         <div class="system-titel">Notenverwaltung</div>
 
         <!-- Navigation -->
         <div class="nav-leiste">
             <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'students' %}">Students</a>
-            <a href="{% url 'courses' %}">Courses</a>
-            <a href="{% url 'grades' %}" class="aktiv">Grades</a>
-            <a href="{% url 'reports' %}">Reports</a>
-            <a href="{% url 'admin_bereich' %}" style="color: #eb0879;">Admin</a>
+            <a href="{% url 'students' %}">Studenten</a>
+            <a href="{% url 'courses' %}">Kurse</a>
+            <a href="{% url 'grades' %}" class="aktiv">Noten</a>
+            <a href="{% url 'reports' %}">Berichte</a>
+            <a href="{% url 'admin_bereich' %}">Admin</a>
         </div>
 
         <div class="box">
             <h1>Notenübersicht</h1>
 
-            <!-- Button um eine neue Note hinzuzufügen (nur für Dozenten/Admins) -->
             {% if is_dozent_or_admin %}
-            <a href="{% url 'grade_create' %}" class="btn-create">+ Note erfassen</a>
+            <div style="margin-bottom: 22px;">
+                <a href="{% url 'grade_create' %}" class="btn-primary">+ Note erfassen</a>
+            </div>
             {% endif %}
 
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <!-- Filter- & Suchleiste -->
+            <form method="get" action="{% url 'grades' %}" class="filter-bar">
+                <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Nach Name oder ID suchen..." class="search-input">
+                
+                <select name="course" class="filter-select">
+                    <option value="">Alle Kurse</option>
+                    {% for c in courses %}
+                        <option value="{{ c.id }}" {% if course_filter == c.id|stringformat:"s" %}selected{% endif %}>
+                            {{ c.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="btn-secondary">Filtern</button>
+                {% if query or course_filter %}
+                <a href="{% url 'grades' %}" class="btn-secondary">Zurücksetzen</a>
+                {% endif %}
+            </form>
+
+            <!-- Tabellenansicht -->
+            <table class="grade-table">
                 <thead>
-                    <tr style="border-bottom: 2px solid #2a2a35;">
-                        <th style="text-align: left; padding: 10px;">Student</th>
-                        <th style="text-align: left; padding: 10px;">Kurs</th>
-                        <th style="text-align: center; padding: 10px;">Note</th>
+                    <tr>
+                        <th>Student</th>
+                        <th>Kurs</th>
+                        <th>Punkte</th>
                         {% if is_dozent_or_admin %}
-                        <th style="text-align: right; padding: 10px;"></th>
+                        <th style="text-align: right;">Aktionen</th>
                         {% endif %}
                     </tr>
                 </thead>
                 <tbody>
-                    {% for grade in grades %}
-                    <tr style="border-bottom: 1px solid #2a2a35;">
-                        <td style="padding: 10px;">{{ grade.student.first_name }} {{ grade.student.last_name }}</td>
-                        <td style="padding: 10px;">{{ grade.course.name }}</td>
-                        <td style="padding: 10px; text-align: center; font-weight: bold; color: #ffffff;">
-                            {{ grade.score }}
+                    {% for g in grades %}
+                    <tr class="grade-row">
+                        <td>
+                            <span class="student-name">{{ g.student.first_name }} {{ g.student.last_name }}</span>
+                            <span class="student-id">#{{ g.student.student_id }}</span>
+                        </td>
+                        <td>
+                            <span class="course-badge">{{ g.course.name }}</span>
+                        </td>
+                        <td>
+                            {% if g.score >= 50 %}
+                                <span class="score-pill-pass">{{ g.score }} Pkt.</span>
+                            {% else %}
+                                <span class="score-pill-fail">{{ g.score }} Pkt.</span>
+                            {% endif %}
                         </td>
                         {% if is_dozent_or_admin %}
-                        <td style="padding: 10px; text-align: right;">
-                            <a href="{% url 'grade_edit' grade.pk %}" class="btn-edit">Bearbeiten</a>
-                            <a href="{% url 'grade_delete' grade.pk %}" class="btn-delete">Löschen</a>
+                        <td style="text-align: right;">
+                            <a href="{% url 'grade_edit' g.pk %}" class="btn-action-edit">Bearbeiten</a>
+                            <a href="{% url 'grade_delete' g.pk %}" class="btn-action-delete" onclick="return confirm('Note wirklich löschen?')">Löschen</a>
                         </td>
                         {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="{% if is_dozent_or_admin %}4{% else %}3{% endif %}"
-                            style="padding: 20px; text-align: center; color: #8b8b9e;">
-                            Noch keine Noten eingetragen.
+                        <td colspan="4" style="text-align: center; color: #71717a; padding: 30px;">
+                            Keine Noteneinträge gefunden.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+
         </div>
     </div>
 </body>

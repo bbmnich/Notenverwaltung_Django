@@ -273,10 +273,6 @@
                 <div class="chart-box">
                     <div class="chart-header">
                         <span>Leistungsübersicht: Bestanden vs. Nicht bestanden</span>
-                        <div class="chart-actions">
-                            <span>—</span>
-                            <span>✕</span>
-                        </div>
                     </div>
                     <div style="padding: 15px; text-align: center;">
                         {% if chart_pie %}
@@ -291,11 +287,7 @@
                 <div class="chart-box">
                     <div class="chart-header">
                         <span>Notenverteilung nach Kursen</span>
-                        <div class="chart-actions">
-                            <span>—</span>
-                            <span>✕</span>
                         </div>
-                    </div>
                     <div style="padding: 15px; text-align: center;">
                         {% if chart_donut %}
                             <img src="data:image/png;base64,{{ chart_donut }}" alt="Notenverteilung nach Kursen" style="max-width: 100%; height: auto;">
@@ -310,10 +302,6 @@
             <!-- Banner unten -->
             <div class="bottom-banner">
                 <span>Übersicht der Kursteilnehmer</span>
-                <div class="chart-actions">
-                    <span>—</span>
-                    <span>✕</span>
-                </div>
             </div>
 
             {% if is_dozent_or_admin %}
